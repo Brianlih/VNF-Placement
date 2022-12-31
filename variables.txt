@@ -1,0 +1,20 @@
+I : number_of_requests
+V : number_of_nodes
+F : types_of_VNFs, number_of_types_of_VNFs
+𝑭_𝒊 : F_i, lower_bound_of_number_in__F_i, upper_bound_of_number_in__F_i
+𝝋_𝒇 : psi_f
+𝒂_𝒊 : a
+"η" _𝒇: eta_f, lower_bound_of_eta_f, upper_bound_of_eta_f
+𝝀_(𝒊, 𝒇) : 
+𝝉_𝒊^((𝑽𝑵𝑭)) : tau_VNF_i
+𝝉_𝒊^((𝑺𝒕𝒂𝒓𝒕𝒊𝒏𝒈)) : tau_starting_i
+𝝉_𝒊^((𝑬𝒏𝒅𝒊𝒏𝒈)) : tau_Ending_i
+𝝉_𝒊 : tau_i
+𝒙_(𝒊,𝒍,𝒇) : 
+𝒚_(𝒇,𝒗): y
+𝒛_(𝒊,𝒇,𝒗)  : z
+𝝅_(𝒘,𝒗) : lower_bound_of_transmission_delay, upper_bound_of_transmission_delay
+𝜶_𝒇: CPU_f, lower_bound_of_CPU_f, upper_bound_of_CPU_f
+𝛺_𝑓 : Mem_f, lower_bound_of_Mem_f, upper_bound_of_Mem_f
+𝜸_𝒗: lower_bound_of_mem_f, upper_bound_of_mem_f
+𝒄_𝒗: lower_bound_of_c_v, upper_bound_of_c_v
