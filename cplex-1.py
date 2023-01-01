@@ -46,7 +46,12 @@ if __name__ == "__main__":
                 if v != w:
                     for m in settings.F_i[i]:
                         for f in settings.F_i[i]:
-                            vnf_delay += x[i, m, w] * x[i, f, v] * settings.check_are_neighbors(m, f, settings.F_i[i]) * settings.v2v_shortest_path_length(settings.G, w, v)
+                            vnf_delay += (
+                                x[i, m, w]
+                                * x[i, f, v]
+                                * settings.check_are_neighbors(m, f, settings.F_i[i])
+                                * settings.v2v_shortest_path_length(settings.G, w, v)
+                            )
         tau_vnf_i.append(vnf_delay)
 
     tau_starting_i = []
@@ -54,7 +59,11 @@ if __name__ == "__main__":
         start_delay = 0
         for v in settings.nodes:
             for f in settings.F_i[i]:
-                start_delay += x[i, f, v] * settings.check_is_first_vnf(f, settings.F_i[i]) * settings.v2v_shortest_path_length(settings.G, settings.s_i[i], v)
+                start_delay += (
+                    x[i, f, v]
+                    * settings.check_is_first_vnf(f, settings.F_i[i])
+                    * settings.v2v_shortest_path_length(settings.G, settings.s_i[i], v)
+                )
         tau_starting_i.append(start_delay)
 
     tau_ending_i = []
@@ -62,7 +71,11 @@ if __name__ == "__main__":
         end_delay = 0
         for v in settings.nodes:
             for f in settings.F_i[i]:
-                end_delay += x[i, f, v] * settings.check_is_last_vnf(f, settings.F_i[i]) * settings.v2v_shortest_path_length(settings.G, settings.e_i[i], v)
+                end_delay += (
+                    x[i, f, v]
+                    * settings.check_is_last_vnf(f, settings.F_i[i])
+                    * settings.v2v_shortest_path_length(settings.G, settings.e_i[i], v)
+                )
         tau_ending_i.append(end_delay)
 
     tau_i = []

@@ -51,7 +51,11 @@ def check_if_meet_delay_requirement(request, i):
         for vnf_2 in settings.F_i[i]:
             if settings.check_are_neighbors(vnf_1, vnf_2, settings.F_i[i]):
                 tau_vnf_i += settings.v2v_shortest_path_length(settings.G, request[vnf_1], request[vnf_2])
-    tau_i += tau_vnf_i + settings.v2v_shortest_path_length(settings.G, settings.s_i[i], request[vnf_1]) + settings.v2v_shortest_path_length(settings.G, settings.e_i[i], request[vnf_2])
+    tau_i += (
+        tau_vnf_i
+        + settings.v2v_shortest_path_length(settings.G, settings.s_i[i], request[vnf_1])
+        + settings.v2v_shortest_path_length(settings.G, settings.e_i[i], request[vnf_2])
+    )
     if tau_i <= settings.r_i[i]:
         return True
     return False
