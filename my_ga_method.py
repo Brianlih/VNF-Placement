@@ -6,10 +6,8 @@ import time
 from copy import deepcopy
 
 def check_if_meet_cpu_capacity_constraint(chromosome):
-    print("check cpu")
     flag = True
     for i in settings.nodes:
-        print(i)
         cpu_count = 0
         for j in range(len(chromosome)):
             if chromosome[j] == i:
@@ -23,10 +21,8 @@ def check_if_meet_cpu_capacity_constraint(chromosome):
             break
     return flag
 def check_if_meet_mem_capacity_constraint(chromosome):
-    print("check mem")
     flag = True
     for i in settings.nodes:
-        print(i)
         vnf_types = [0] * settings.number_of_VNF_types
         mem_count = 0
         for j in range(len(chromosome)):
@@ -131,7 +127,8 @@ for p in range(settings.number_of_individual):
     population.append(chromosome)
 
 #------------------------------------------------------------------------------------------
-# Calculate the fitness value of each individual and sort them in decresing order
+# Calculate the fitness value of each individual, sort them in decresing order,
+# and add elitisms to next generation
 #------------------------------------------------------------------------------------------
 
 fitness_of_chromosomes = [0] * len(population)
@@ -143,14 +140,69 @@ for k in range(len(population)):
             if check_if_meet_delay_requirement(population[k][j:j + settings.number_of_VNF_types], i):
                 fitness_of_chromosomes[k] += settings.profit_i[i]
         j += settings.number_of_VNF_types
-print("fitness_of_chromosomes: ", fitness_of_chromosomes)
 
-                    
+fitness_of_chromosomes.sort(reverse=True)
+sorted_population_index = sorted(
+    range(len(fitness_of_chromosomes)),
+    key= lambda k: fitness_of_chromosomes[k]
+)
+
+# adding elitisms to next generation
+elitisms = []
+for i in range(int(settings.number_of_individual * settings.elitism_rate)):
+    elitisms.append(population[sorted_population_index[i]])
+population.extend(elitisms)
+
+#------------------------------------------------------------------------------------------
+# Crossover
+#------------------------------------------------------------------------------------------
+
+while len(population) < 2 * settings.number_of_individual:
+    tournament_set = random.sample(
+        sorted_population_index,
+        k=settings.number_of_individual_chose_from_population_for_tournament
+    )
+    p1_index = settings.number_of_individual
+    for i in range(len(tournament_set)):
+        if sorted_population_index.index(tournament_set[i]) < p1_index:
+            p1_index = sorted_population_index.index(tournament_set[i])
+    tournament_set = random.sample(
+        sorted_population_index,
+        k=settings.number_of_individual_chose_from_population_for_tournament
+    )
+    p2_index = settings.number_of_individual
+    for i in range(len(tournament_set)):
+        if sorted_population_index.index(tournament_set[i]) < p2_index:
+            p2_index = sorted_population_index.index(tournament_set[i])
+    it_crossover = 1
+    while it_crossover <= settings.maximum_of_iteration_for_one_ga_crossover:
+        p1 = deepcopy(population[p1_index])
+        p2 = deepcopy(population[p2_index])
+        for i in range(len(p1)):
+            R = random.uniform(0, 1)
+            if R > settings.crossover_rate:
+                # crossover
+                buffer = p1[i]
+                p1[i] = p2[i]
+                p2[i] = buffer
+        if check_if_meet_cpu_capacity_constraint(p1) and check_if_meet_cpu_capacity_constraint(p2):
+            population.append(p1)
+            population.append(p2)
+            break
+        it_crossover += 1
+    if it_crossover > settings.maximum_of_iteration_for_one_ga_crossover:
+        population.append(population[p1_index])
+        population.append(population[p2_index])
+
+del population[0:settings.number_of_individual]
+population.sort(reverse=True)
+while len(population) > settings.number_of_individual:
+    population.pop()
+
 end_time = time.time()
 time_cost = end_time - start_time
 print("time_cost: ",time_cost)
     
-# crossover
 # mutation
 # select the fittest individual as the optimal solution for the current generation
 # termination condition
