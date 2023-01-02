@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from random import choice
 import networkx as nx
 import settings
 import time
@@ -20,6 +21,7 @@ def check_if_meet_cpu_capacity_constraint(chromosome):
             flag = False
             break
     return flag
+
 def check_if_meet_mem_capacity_constraint(chromosome):
     flag = True
     for i in settings.nodes:
@@ -154,7 +156,7 @@ for i in range(int(settings.number_of_individual * settings.elitism_rate)):
 population.extend(elitisms)
 
 #------------------------------------------------------------------------------------------
-# Crossover
+# Crossover & Mutation
 #------------------------------------------------------------------------------------------
 
 while len(population) < 2 * settings.number_of_individual:
@@ -174,25 +176,56 @@ while len(population) < 2 * settings.number_of_individual:
     for i in range(len(tournament_set)):
         if sorted_population_index.index(tournament_set[i]) < p2_index:
             p2_index = sorted_population_index.index(tournament_set[i])
+
     it_crossover = 1
     while it_crossover <= settings.maximum_of_iteration_for_one_ga_crossover:
         p1 = deepcopy(population[p1_index])
         p2 = deepcopy(population[p2_index])
         for i in range(len(p1)):
-            R = random.uniform(0, 1)
-            if R > settings.crossover_rate:
+            crossover_R = random.uniform(0, 1)
+            if crossover_R > settings.crossover_rate:
                 # crossover
                 buffer = p1[i]
                 p1[i] = p2[i]
                 p2[i] = buffer
         if check_if_meet_cpu_capacity_constraint(p1) and check_if_meet_cpu_capacity_constraint(p2):
-            population.append(p1)
-            population.append(p2)
             break
         it_crossover += 1
+
     if it_crossover > settings.maximum_of_iteration_for_one_ga_crossover:
-        population.append(population[p1_index])
-        population.append(population[p2_index])
+        p1 = population[p1_index]
+        p2 = population[p2_index]
+
+    it_mutation = 1
+    while it_mutation <= settings.maximum_of_iteration_for_one_ga_mutation:
+        p11 = deepcopy(p1)
+        p22 = deepcopy(p2)
+        for i in range(len(p11)):
+            mutation_R_11 = random.uniform(0, 1)
+            mutation_R_22 = random.uniform(0, 1)
+            if mutation_R_11 > settings.mutation_rate:
+                # mutation
+                while True:
+                    rn = random.randint(0, settings.number_of_nodes - 1)
+                    if rn != p11[i]:
+                        p11[i] = rn
+                        break
+            if mutation_R_22 > settings.mutation_rate:
+                # mutation
+                while True:
+                    rn = random.randint(0, settings.number_of_nodes - 1)
+                    if rn != p22[i]:
+                        p22[i] = rn
+                        break
+        if check_if_meet_cpu_capacity_constraint(p1) and check_if_meet_cpu_capacity_constraint(p2):
+            population.append(p11)
+            population.append(p22)
+            break
+        it_mutation += 1
+
+    if it_mutation > settings.maximum_of_iteration_for_one_ga_mutation:
+        population.append(p1)
+        population.append(p2)
 
 del population[0:settings.number_of_individual]
 population.sort(reverse=True)
