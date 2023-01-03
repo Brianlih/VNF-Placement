@@ -145,7 +145,7 @@ def init():
         for j in range(len(F_i[i])):
             profit += eta_f[F_i[i][j]] * (1 + psi_f[F_i[i][j]]) * cpu_f[F_i[i][j]]
         profit_i.append(profit)
-    print("profit_i ", profit_i)
+    print("profit_i = ", profit_i)
 
 
     r_i = []

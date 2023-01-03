@@ -1,5 +1,6 @@
 from docplex.mp.model import Model
-import settings
+# import settings
+from test import settings
 
 if __name__ == "__main__":
     #------------------------------------------------------------------------------------------

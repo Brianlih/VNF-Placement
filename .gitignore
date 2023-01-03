@@ -2,3 +2,5 @@ topo/
 try_code/
 result/
 __pycache__/
+test/__pycache__/
+test/__init__.py
