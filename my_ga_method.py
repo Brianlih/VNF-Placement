@@ -8,40 +8,30 @@ import time
 from copy import deepcopy
 
 def check_if_meet_cpu_capacity_constraint(chromosome):
-    flag = True
     for i in settings.nodes:
         cpu_count = 0
         for j in range(len(chromosome)):
             if chromosome[j] == i:
-                tmp = (j + 1) % settings.number_of_VNF_types
-                if tmp == 0:
-                    cpu_count += settings.cpu_f[settings.number_of_VNF_types - 1]
-                else:
-                    cpu_count += settings.cpu_f[tmp - 1]
+                vnf_type = j % settings.number_of_VNF_types
+                cpu_count += settings.cpu_f[vnf_type]
         if cpu_count > settings.cpu_v[i]:
-            flag = False
-            break
-    return flag
+            return False
+    return True
 
 def check_if_meet_mem_capacity_constraint(chromosome):
-    flag = True
     for i in settings.nodes:
         vnf_types = [0] * settings.number_of_VNF_types
         mem_count = 0
         for j in range(len(chromosome)):
             if chromosome[j] == i:
-                tmp = (j + 1) % settings.number_of_VNF_types
-                if tmp == 0:
-                    vnf_types[settings.number_of_VNF_types - 1] = 1
-                else:
-                    vnf_types[tmp - 1] = 1
+                tmp = j % settings.number_of_VNF_types
+                vnf_types[tmp] = 1
         for j in range(len(vnf_types)):
             if vnf_types[j] == 1:
                 mem_count += 1
-        if mem_count > settings.mem_v:
-            flag = False
-            break
-    return flag
+        if mem_count > settings.mem_v[i]:
+            return False
+    return True
 
 def check_if_meet_delay_requirement(request, i):
     tau_vnf_i = 0
@@ -171,7 +161,7 @@ if __name__ == "__main__":
         # Crossover & Mutation
         #------------------------------------------------------------------------------------------
 
-        while len(population) < 2 * settings.number_of_individual:
+        while len(population) < 2 * settings.number_of_individual + int(settings.number_of_individual * settings.elitism_rate):
             tournament_set = random.sample(
                 sorted_population_index,
                 k=settings.number_of_individual_chose_from_population_for_tournament
@@ -194,13 +184,17 @@ if __name__ == "__main__":
                 p1 = deepcopy(population[p1_index])
                 p2 = deepcopy(population[p2_index])
                 for i in range(len(p1)):
-                    crossover_R = random.uniform(0, 1)
-                    if crossover_R > settings.crossover_rate:
-                        # crossover
-                        buffer = p1[i]
-                        p1[i] = p2[i]
-                        p2[i] = buffer
-                if check_if_meet_cpu_capacity_constraint(p1) and check_if_meet_cpu_capacity_constraint(p2):
+                    if p1[i] != -2 and p2[i] != -2:
+                        crossover_R = random.uniform(0, 1)
+                        if crossover_R > settings.crossover_rate:
+                            # crossover
+                            buffer = p1[i]
+                            p1[i] = p2[i]
+                            p2[i] = buffer
+                if (check_if_meet_cpu_capacity_constraint(p1) and
+                    check_if_meet_cpu_capacity_constraint(p2) and
+                    check_if_meet_mem_capacity_constraint(p1) and
+                    check_if_meet_mem_capacity_constraint(p2)):
                     break
                 it_crossover += 1
 
@@ -213,23 +207,27 @@ if __name__ == "__main__":
                 p11 = deepcopy(p1)
                 p22 = deepcopy(p2)
                 for i in range(len(p11)):
-                    mutation_R_11 = random.uniform(0, 1)
-                    mutation_R_22 = random.uniform(0, 1)
-                    if mutation_R_11 > settings.mutation_rate:
-                        # mutation
-                        while True:
-                            rn = random.randint(0, settings.number_of_nodes - 1)
-                            if rn != p11[i]:
-                                p11[i] = rn
-                                break
-                    if mutation_R_22 > settings.mutation_rate:
-                        # mutation
-                        while True:
-                            rn = random.randint(0, settings.number_of_nodes - 1)
-                            if rn != p22[i]:
-                                p22[i] = rn
-                                break
-                if check_if_meet_cpu_capacity_constraint(p1) and check_if_meet_cpu_capacity_constraint(p2):
+                    if p11[i] != -2 and p22[i] != -2:
+                        mutation_R_11 = random.uniform(0, 1)
+                        mutation_R_22 = random.uniform(0, 1)
+                        if mutation_R_11 > settings.mutation_rate:
+                            # mutation
+                            while True:
+                                rn = random.randint(0, settings.number_of_nodes - 1)
+                                if rn != p11[i]:
+                                    p11[i] = rn
+                                    break
+                        if mutation_R_22 > settings.mutation_rate:
+                            # mutation
+                            while True:
+                                rn = random.randint(0, settings.number_of_nodes - 1)
+                                if rn != p22[i]:
+                                    p22[i] = rn
+                                    break
+                if (check_if_meet_cpu_capacity_constraint(p11) and
+                    check_if_meet_cpu_capacity_constraint(p22) and
+                    check_if_meet_mem_capacity_constraint(p11) and
+                    check_if_meet_mem_capacity_constraint(p22)):
                     population.append(p11)
                     population.append(p22)
                     break
