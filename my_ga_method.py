@@ -2,91 +2,86 @@ import numpy as np
 import random
 from random import choice
 import networkx as nx
-# import settings
-from test import settings
+import settings
+# from test import settings
 import time
 from copy import deepcopy
 
-def check_if_meet_cpu_capacity_constraint(chromosome):
-    for i in settings.nodes:
+def check_if_meet_cpu_capacity_constraint(chromosome, data):
+    for i in data.nodes:
         cpu_count = 0
         for j in range(len(chromosome)):
             if chromosome[j] == i:
-                vnf_type = j % settings.number_of_VNF_types
-                cpu_count += settings.cpu_f[vnf_type]
-        if cpu_count > settings.cpu_v[i]:
+                vnf_type = j % data.number_of_VNF_types
+                cpu_count += data.cpu_f[vnf_type]
+        if cpu_count > data.cpu_v[i]:
             return False
     return True
 
-def check_if_meet_mem_capacity_constraint(chromosome):
-    for i in settings.nodes:
-        vnf_types = [0] * settings.number_of_VNF_types
+def check_if_meet_mem_capacity_constraint(chromosome, data):
+    for i in data.nodes:
+        vnf_types = [0] * data.number_of_VNF_types
         mem_count = 0
         for j in range(len(chromosome)):
             if chromosome[j] == i:
-                tmp = j % settings.number_of_VNF_types
+                tmp = j % data.number_of_VNF_types
                 vnf_types[tmp] = 1
         for j in range(len(vnf_types)):
             if vnf_types[j] == 1:
                 mem_count += 1
-        if mem_count > settings.mem_v[i]:
+        if mem_count > data.mem_v[i]:
             return False
     return True
 
-def check_if_meet_delay_requirement(request, i):
+def check_if_meet_delay_requirement(request, i, data):
     tau_vnf_i = 0
     tau_i = 0
-    for vnf_1 in settings.F_i[i]:
-        for vnf_2 in settings.F_i[i]:
-            if settings.check_are_neighbors(vnf_1, vnf_2, settings.F_i[i]):
-                tau_vnf_i += settings.v2v_shortest_path_length(settings.G, request[vnf_1], request[vnf_2])
+    for vnf_1 in data.F_i[i]:
+        for vnf_2 in data.F_i[i]:
+            if settings.check_are_neighbors(vnf_1, vnf_2, data.F_i[i]):
+                tau_vnf_i += settings.v2v_shortest_path_length(data.G, request[vnf_1], request[vnf_2])
     tau_i += (
         tau_vnf_i
-        + settings.v2v_shortest_path_length(settings.G, settings.s_i[i], request[vnf_1])
-        + settings.v2v_shortest_path_length(settings.G, settings.e_i[i], request[vnf_2])
+        + settings.v2v_shortest_path_length(data.G, data.s_i[i], request[vnf_1])
+        + settings.v2v_shortest_path_length(data.G, data.e_i[i], request[vnf_2])
     )
-    if tau_i <= settings.r_i[i]:
+    if tau_i <= data.r_i[i]:
         return True
     return False
 
-def calculate_fitness_value(population):
+def calculate_fitness_value(population, data):
     fitness_of_chromosomes = [0] * len(population)
     for k in range(len(population)):
         j = 0
         while j < len(population[k]):
-            if -1 not in population[k][j:j + settings.number_of_VNF_types]:
-                i = j // settings.number_of_VNF_types
-                if check_if_meet_delay_requirement(population[k][j:j + settings.number_of_VNF_types], i):
-                    fitness_of_chromosomes[k] += settings.profit_i[i]
-            j += settings.number_of_VNF_types
+            if -1 not in population[k][j:j + data.number_of_VNF_types]:
+                i = j // data.number_of_VNF_types
+                if check_if_meet_delay_requirement(population[k][j:j + data.number_of_VNF_types], i, data):
+                    fitness_of_chromosomes[k] += data.profit_i[i]
+            j += data.number_of_VNF_types
     return fitness_of_chromosomes
 
-if __name__ == "__main__":
-    #------------------------------------------------------------------------------------------
-    # Initialize the input data
-    #------------------------------------------------------------------------------------------
-
+def main(data_from_cplex):
+    data = data_from_cplex
     start_time = time.time()
-    settings.init()
-
     #------------------------------------------------------------------------------------------
     # Initialize population randomly
     #------------------------------------------------------------------------------------------
 
     population = []
-    request_list = [r for r in range(settings.number_of_requests)]
-    for p in range(settings.number_of_individual):
-        chromosome = [-3] * settings.number_of_gene_in_an_individual
-        placement_sequence = random.sample(request_list, k=settings.number_of_requests)
-        vnf_on_node = [[] for i in range(settings.number_of_nodes)]
-        rest_cpu_v = deepcopy(settings.cpu_v)
-        rest_mem_v = deepcopy(settings.mem_v)
-        for i in placement_sequence:
-            all_paths = nx.all_simple_paths(settings.G, source=settings.s_i[i], target=settings.e_i[i])
+    request_list = [r for r in range(data.number_of_requests)]
+    for p in range(data.number_of_individual):
+        chromosome = [-3] * data.number_of_gene_in_an_individual
+        assign_sequence = random.sample(request_list, k=data.number_of_requests)
+        vnf_on_node = [[] for i in range(data.number_of_nodes)]
+        rest_cpu_v = deepcopy(data.cpu_v)
+        rest_mem_v = deepcopy(data.mem_v)
+        for i in assign_sequence:
+            all_paths = nx.all_simple_paths(data.G, source=data.s_i[i], target=data.e_i[i])
             all_paths_list = list(all_paths)
-            j = i * settings.number_of_VNF_types
+            j = i * data.number_of_VNF_types
             start = j
-            last = j + settings.number_of_VNF_types - 1
+            last = j + data.number_of_VNF_types - 1
             buffer_cpu = rest_cpu_v # cpu_v befor placing F_i[i]
             buffer_mem = rest_mem_v
             buffer_vnf_on_ndoe = vnf_on_node
@@ -95,12 +90,12 @@ if __name__ == "__main__":
                 path = all_paths_list[random.randint(0, len(all_paths_list) - 1)]
                 all_paths_list.remove(path)
                 while(j <= last):
-                    vnf_type = j % settings.number_of_VNF_types
-                    if vnf_type not in settings.F_i[i]:
+                    vnf_type = j % data.number_of_VNF_types
+                    if vnf_type not in data.F_i[i]:
                         chromosome[j] = -2
                     else:
                         for node in path:
-                            if settings.cpu_f[vnf_type] <= rest_cpu_v[node]:
+                            if data.cpu_f[vnf_type] <= rest_cpu_v[node]:
                                 if vnf_type not in vnf_on_node[node]:
                                     if rest_mem_v[node] < 1:
                                         continue
@@ -108,11 +103,11 @@ if __name__ == "__main__":
                                         vnf_on_node[node].append(vnf_type)
                                         rest_mem_v[node] -= 1
                                 chromosome[j] = node
-                                rest_cpu_v[node] -= settings.cpu_f[vnf_type]
+                                rest_cpu_v[node] -= data.cpu_f[vnf_type]
                                 assigned_count += 1
                                 break
                     j += 1
-                if assigned_count == len(settings.F_i[i]):
+                if assigned_count == len(data.F_i[i]):
                     break
                 else:
                     if len(all_paths_list) > 0:
@@ -136,7 +131,7 @@ if __name__ == "__main__":
     # Calculate the fitness value of each individual, sort them in decresing order
     #------------------------------------------------------------------------------------------
 
-    fitness_of_chromosomes = calculate_fitness_value(population)
+    fitness_of_chromosomes = calculate_fitness_value(population, data)
 
     sorted_population_index = sorted(
         range(len(fitness_of_chromosomes)),
@@ -146,14 +141,14 @@ if __name__ == "__main__":
 
     fittest = []
     it = 1
-    while it <= settings.maximum_of_iteration_for_ga:
+    while it <= data.iteration_for_one_ga:
         print("iteration ", it)
         #------------------------------------------------------------------------------------------
         # Selection
         #------------------------------------------------------------------------------------------
 
         elitisms = []
-        for i in range(int(settings.number_of_individual * settings.elitism_rate)):
+        for i in range(int(data.number_of_individual * data.elitism_rate)):
             elitisms.append(population[sorted_population_index[i]])
         population.extend(elitisms)
 
@@ -161,91 +156,91 @@ if __name__ == "__main__":
         # Crossover & Mutation
         #------------------------------------------------------------------------------------------
 
-        while len(population) < 2 * settings.number_of_individual + int(settings.number_of_individual * settings.elitism_rate):
+        while len(population) < 2 * data.number_of_individual + int(data.number_of_individual * data.elitism_rate):
             tournament_set = random.sample(
                 sorted_population_index,
-                k=settings.number_of_individual_chose_from_population_for_tournament
+                k=data.number_of_individual_chose_from_population_for_tournament
             )
-            p1_index = settings.number_of_individual
+            p1_index = data.number_of_individual
             for i in range(len(tournament_set)):
                 if sorted_population_index.index(tournament_set[i]) < p1_index:
                     p1_index = sorted_population_index.index(tournament_set[i])
             tournament_set = random.sample(
                 sorted_population_index,
-                k=settings.number_of_individual_chose_from_population_for_tournament
+                k=data.number_of_individual_chose_from_population_for_tournament
             )
-            p2_index = settings.number_of_individual
+            p2_index = data.number_of_individual
             for i in range(len(tournament_set)):
                 if sorted_population_index.index(tournament_set[i]) < p2_index:
                     p2_index = sorted_population_index.index(tournament_set[i])
 
             it_crossover = 1
-            while it_crossover <= settings.maximum_of_iteration_for_one_ga_crossover:
+            while it_crossover <= data.maximum_of_iteration_for_one_ga_crossover:
                 p1 = deepcopy(population[p1_index])
                 p2 = deepcopy(population[p2_index])
                 for i in range(len(p1)):
                     if p1[i] != -2 and p2[i] != -2:
                         crossover_R = random.uniform(0, 1)
-                        if crossover_R > settings.crossover_rate:
+                        if crossover_R > data.crossover_rate:
                             # crossover
                             buffer = p1[i]
                             p1[i] = p2[i]
                             p2[i] = buffer
-                if (check_if_meet_cpu_capacity_constraint(p1) and
-                    check_if_meet_cpu_capacity_constraint(p2) and
-                    check_if_meet_mem_capacity_constraint(p1) and
-                    check_if_meet_mem_capacity_constraint(p2)):
+                if (check_if_meet_cpu_capacity_constraint(p1, data) and
+                    check_if_meet_cpu_capacity_constraint(p2, data) and
+                    check_if_meet_mem_capacity_constraint(p1, data) and
+                    check_if_meet_mem_capacity_constraint(p2, data)):
                     break
                 it_crossover += 1
 
-            if it_crossover > settings.maximum_of_iteration_for_one_ga_crossover:
+            if it_crossover > data.maximum_of_iteration_for_one_ga_crossover:
                 p1 = population[p1_index]
                 p2 = population[p2_index]
 
             it_mutation = 1
-            while it_mutation <= settings.maximum_of_iteration_for_one_ga_mutation:
+            while it_mutation <= data.maximum_of_iteration_for_one_ga_mutation:
                 p11 = deepcopy(p1)
                 p22 = deepcopy(p2)
                 for i in range(len(p11)):
                     if p11[i] != -2 and p22[i] != -2:
                         mutation_R_11 = random.uniform(0, 1)
                         mutation_R_22 = random.uniform(0, 1)
-                        if mutation_R_11 > settings.mutation_rate:
+                        if mutation_R_11 > data.mutation_rate:
                             # mutation
                             while True:
-                                rn = random.randint(0, settings.number_of_nodes - 1)
+                                rn = random.randint(0, data.number_of_nodes - 1)
                                 if rn != p11[i]:
                                     p11[i] = rn
                                     break
-                        if mutation_R_22 > settings.mutation_rate:
+                        if mutation_R_22 > data.mutation_rate:
                             # mutation
                             while True:
-                                rn = random.randint(0, settings.number_of_nodes - 1)
+                                rn = random.randint(0, data.number_of_nodes - 1)
                                 if rn != p22[i]:
                                     p22[i] = rn
                                     break
-                if (check_if_meet_cpu_capacity_constraint(p11) and
-                    check_if_meet_cpu_capacity_constraint(p22) and
-                    check_if_meet_mem_capacity_constraint(p11) and
-                    check_if_meet_mem_capacity_constraint(p22)):
+                if (check_if_meet_cpu_capacity_constraint(p11, data) and
+                    check_if_meet_cpu_capacity_constraint(p22, data) and
+                    check_if_meet_mem_capacity_constraint(p11, data) and
+                    check_if_meet_mem_capacity_constraint(p22, data)):
                     population.append(p11)
                     population.append(p22)
                     break
                 it_mutation += 1
 
-            if it_mutation > settings.maximum_of_iteration_for_one_ga_mutation:
+            if it_mutation > data.maximum_of_iteration_for_one_ga_mutation:
                 population.append(p1)
                 population.append(p2)
 
-        del population[0:settings.number_of_individual]
-        while len(population) > settings.number_of_individual:
+        del population[0:data.number_of_individual]
+        while len(population) > data.number_of_individual:
             population.pop()
 
         #------------------------------------------------------------------------------------------
         # Calculate the fitness value of each individual, and sort them in decresing order
         #------------------------------------------------------------------------------------------
 
-        fitness_of_chromosomes = calculate_fitness_value(population)
+        fitness_of_chromosomes = calculate_fitness_value(population, data)
 
         sorted_population_index = sorted(
             range(len(fitness_of_chromosomes)),
@@ -260,9 +255,14 @@ if __name__ == "__main__":
         fittest.append(fitness_of_chromosomes[0])
         it += 1
     
-    solution = population[fitness_of_chromosomes.index(fittest[-1])]
-    print("solution: ", solution)
-    print("fittest value: ", fittest)
+    # solution = population[fitness_of_chromosomes.index(fittest[-1])]
+    fittest_value = fittest[-1]
     end_time = time.time()
     time_cost = end_time - start_time
-    print("time_cost: ",time_cost)
+
+    res = {
+        "fittest_value": fittest_value,
+        "time_cost": time_cost,
+    }
+
+    return res

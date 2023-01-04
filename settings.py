@@ -46,7 +46,7 @@ def init():
     global upper_bound_of_rho_v, lower_bound_of_F_i, upper_bound_of_F_i, lower_bound_of_pi_wv
     global upper_bound_of_pi_wv, lower_bound_of_r_i, upper_bound_of_r_i
     global F, G, nodes, cpu_v, mem_v, eta_f, cpu_f, F_i, psi_f, profit_i, r_i, s_i, e_i
-    global number_of_individual, number_of_gene_in_an_individual, elitism_rate, maximum_of_iteration_for_ga
+    global number_of_individual, number_of_gene_in_an_individual, elitism_rate, iteration_for_one_ga
     global maximum_of_iteration_for_one_ga_crossover, maximum_of_iteration_for_one_ga_mutation
     global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
@@ -75,7 +75,7 @@ def init():
     number_of_individual = 50 # population size
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     elitism_rate = 0.1
-    maximum_of_iteration_for_ga = 1000
+    iteration_for_one_ga = 50
     maximum_of_iteration_for_one_ga_crossover = 20
     maximum_of_iteration_for_one_ga_mutation = 20
     number_of_individual_chose_from_population_for_tournament = 5
