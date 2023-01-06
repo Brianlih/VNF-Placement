@@ -1,23 +1,23 @@
 from docplex.mp.model import Model
 import settings
-# from test import settings
 import matplotlib.pyplot as plt
 import time
 import my_ga_method
 
 if __name__ == "__main__":
-    number_of_requests = [15]
-    # number_of_requests = [15, 20, 25, 30, 35, 40, 45, 50, 55]
-    # number_of_VNF_types = [5]
-    number_of_VNF_types = [5, 10, 15, 20, 25, 30, 35, 40, 45]
-    number_of_iteration = 50
+    # number_of_requests = [15]
+    number_of_requests = [15, 20, 25, 30, 35, 40, 45, 50, 55]
+    number_of_VNF_types = [5]
+    # number_of_VNF_types = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+    number_of_iteration = 100
 
     result_mean_cplex_res_value = []
     result_mean_ga_res_value = []
     result_mean_cplex_time_cost = []
     result_mean_ga_time_cost = []
-    for nvt in range(len(number_of_VNF_types)):
-        print("nvt: ", nvt)
+    for nr in range(len(number_of_requests)):
+        # print("nvt: ", nvt)
+        print("nr: ", nr)
         cplex_res_value = []
         ga_res_value = []
         cplex_time_cost = []
@@ -28,23 +28,23 @@ if __name__ == "__main__":
         mean_ga_time_cost = 0
         for iteration in range(number_of_iteration):
             # Initialize the input data
-            settings.init(number_of_requests[0], number_of_VNF_types[nvt])
-            
+            settings.init(number_of_requests[nr], number_of_VNF_types[0])
+                        
             start_time = time.time()
             #------------------------------------------------------------------------------------------
             # Creating the model
             #------------------------------------------------------------------------------------------
 
-            VNF_placement_model = Model("VNF_placement")
+            VNF_placement_model = Model("VNF_placement", log_output=True)
 
             #------------------------------------------------------------------------------------------
             # Creating decsision variables
             #------------------------------------------------------------------------------------------
 
-            z = VNF_placement_model.binary_var_dict(number_of_requests[0], name="z")
+            z = VNF_placement_model.binary_var_dict(number_of_requests[nr], name="z")
             x = VNF_placement_model.binary_var_dict((
                 (i, f, v)
-                for i in range(number_of_requests[0])
+                for i in range(number_of_requests[nr])
                 for f in settings.F_i[i]
                 for v in settings.nodes),
                 name="x"
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
             # Delay requirement constraint
             tau_vnf_i = []
-            for i in range(number_of_requests[0]):
+            for i in range(number_of_requests[nr]):
                 vnf_delay = 0
                 for w in settings.nodes:
                     for v in settings.nodes:
@@ -78,7 +78,7 @@ if __name__ == "__main__":
                 tau_vnf_i.append(vnf_delay)
 
             tau_starting_i = []
-            for i in range(number_of_requests[0]):
+            for i in range(number_of_requests[nr]):
                 start_delay = 0
                 for v in settings.nodes:
                     for f in settings.F_i[i]:
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 tau_starting_i.append(start_delay)
 
             tau_ending_i = []
-            for i in range(number_of_requests[0]):
+            for i in range(number_of_requests[nr]):
                 end_delay = 0
                 for v in settings.nodes:
                     for f in settings.F_i[i]:
@@ -107,9 +107,9 @@ if __name__ == "__main__":
 
             sequence = set()
             removed_set = set()
-            for i in range(number_of_requests[0]):
+            for i in range(number_of_requests[nr]):
                 sequence.add(i)
-            for i in range(number_of_requests[0]):
+            for i in range(number_of_requests[nr]):
                 if len(settings.F_i[i]) <= 1:
                     VNF_placement_model.add_constraint(tau_i[i] <= settings.M * (1-z[i]) + settings.r_i[i])
                     removed_set.add(i)
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             )
 
             # # Number of same type VNF in a request constraint
-            # for i in range(number_of_requests[0]):
+            # for i in range(number_of_requests[nr]):
             #     for f in settings.F:
             #         count = 0
             #         for l in range(len(settings.F_i[i])):
@@ -131,7 +131,7 @@ if __name__ == "__main__":
             # Relation between z and x constraint
             VNF_placement_model.add_constraints((
                 sum(x[i, f, v] for v in range(settings.number_of_nodes)) == z[i]
-                for i in range(number_of_requests[0])
+                for i in range(number_of_requests[nr])
                 for f in settings.F_i[i]),
                 names="relation_between_z_and_x"
             )
@@ -139,7 +139,7 @@ if __name__ == "__main__":
             # Relation between y and x constraint
             VNF_placement_model.add_constraints((
                 y[f, v] - x[i, f, v] >= 0
-                for i in range(number_of_requests[0])
+                for i in range(number_of_requests[nr])
                 for f in settings.F_i[i]
                 for v in settings.nodes),
                 names="relation_between_y_and_x"
@@ -148,7 +148,7 @@ if __name__ == "__main__":
             # CPU capacity constraint
             for v in range(settings.number_of_nodes):
                 occupied_cpu_resources = 0
-                for i in range(number_of_requests[0]):
+                for i in range(number_of_requests[nr]):
                     for f in settings.F_i[i]:
                         occupied_cpu_resources += x[i, f, v] * settings.cpu_f[f]
                 VNF_placement_model.add_constraint(occupied_cpu_resources <= settings.cpu_v[v])
@@ -164,7 +164,7 @@ if __name__ == "__main__":
             # Defineing the objective function
             #-------------------------------------------------------------------------------------
 
-            obj_fn = sum(z[i] * settings.profit_i[i] for i in range(number_of_requests[0]))
+            obj_fn = sum(z[i] * settings.profit_i[i] for i in range(number_of_requests[nr]))
 
             VNF_placement_model.set_objective('max', obj_fn)
 
@@ -177,8 +177,8 @@ if __name__ == "__main__":
 
             # define input data for GA method
             class Data:
-                number_of_VNF_types = number_of_VNF_types[nvt]
-                number_of_requests = number_of_requests[0]
+                number_of_VNF_types = number_of_VNF_types[0]
+                number_of_requests = number_of_requests[nr]
                 number_of_nodes = settings.number_of_nodes
                 F = settings.F
                 G = settings.G
@@ -235,7 +235,9 @@ if __name__ == "__main__":
     x2 = number_of_VNF_types
     y2 = result_mean_ga_res_value
     plt.plot(x2, y2, 'o-', color = 'g', label = "GA", markersize = 8, linewidth = 2.5)
-    plt.xlabel('Number of VNF types')
+
+    plt.xlabel('Number of requests')
     plt.ylabel('Total profit')
+    plt.title('number_of_iteration=100, iteration_for_one_ga=1000')
     plt.legend()
     plt.show()

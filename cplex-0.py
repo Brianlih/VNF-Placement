@@ -9,7 +9,7 @@ def construct_topo(filename_topo):
     nodes_secondColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(2))
     quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
-        for i in range(quantity_nodes)]
+        for i in range(len(nodes_firstColumn))]
     print("edge_weights = ", edge_weights)
     Graph = nx.Graph()
     for i in range(len(nodes_firstColumn)):
@@ -36,7 +36,7 @@ def check_is_first_vnf(f, arr):
     return 0
 
 def check_is_last_vnf(f, arr):
-    if f == arr[len(arr) - 1]:
+    if f == arr[-1]:
         return 1
     return 0
 
@@ -45,19 +45,21 @@ if __name__ == "__main__":
     # Creating input data
     #--------------------------------------------------------------------------------------------
 
+    random.seed(1)
+
     M = 1000000
     number_of_VNF_types = 5
     number_of_requests = 15
-    number_of_nodes = 4
+    number_of_nodes = 11
 
     lower_bound_of_eta_f = 1
     upper_bound_of_eta_f = 3
     lower_bound_of_cpu_f = 2
     upper_bound_of_cpu_f = 5
-    lower_bound_of_cpu_v = 7
-    upper_bound_of_cpu_v = 10
-    lower_bound_of_mem_v = 3
-    upper_bound_of_mem_v = 5
+    lower_bound_of_cpu_v = 15
+    upper_bound_of_cpu_v = 20
+    lower_bound_of_mem_v = 2
+    upper_bound_of_mem_v = 4
     lower_bound_of_rho_v = 40
     upper_bound_of_rho_v = 50
     lower_bound_of_F_i = 1
@@ -70,10 +72,10 @@ if __name__ == "__main__":
     F = [i for i in range(number_of_VNF_types)]
     print("F = ", F)
     number_of_topo = 1
-    # G = construct_topo("D:/python_CPLEX_projects/VNF_placement/topo/topos/"
-    #     + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
-    G = construct_topo("D:/python_CPLEX_projects/VNF_placement/topo/small_topo/"
+    G = construct_topo("D:/python_CPLEX_projects/VNF_placement/topo/topos/"
         + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
+    # G = construct_topo("D:/python_CPLEX_projects/VNF_placement/topo/small_topo/"
+    #     + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
     # nx.draw_networkx(G)
     # plt.show()
     print("number_of_nodes = ", number_of_nodes)
@@ -155,7 +157,7 @@ if __name__ == "__main__":
     # Creating the model
     #------------------------------------------------------------------------------------------
 
-    VNF_placement_model = Model("VNF_placement")
+    VNF_placement_model = Model("VNF_placement", log_output=True)
 
     #------------------------------------------------------------------------------------------
     # Creating decsision variables

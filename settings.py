@@ -8,7 +8,7 @@ def construct_topo(filename_topo):
     nodes_secondColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(2))
     quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
-        for i in range(quantity_nodes)]
+        for i in range(len(nodes_firstColumn))]
     # print("edge_weights = ", edge_weights)
     Graph = nx.Graph()
     for i in range(len(nodes_firstColumn)):
@@ -35,7 +35,7 @@ def check_is_first_vnf(f, arr):
     return 0
 
 def check_is_last_vnf(f, arr):
-    if f == arr[len(arr) - 1]:
+    if f == arr[-1]:
         return 1
     return 0
 
@@ -57,10 +57,10 @@ def init(number_of_requests, number_of_VNF_types):
     upper_bound_of_eta_f = 3
     lower_bound_of_cpu_f = 2
     upper_bound_of_cpu_f = 5
-    lower_bound_of_cpu_v = 7
-    upper_bound_of_cpu_v = 10
-    lower_bound_of_mem_v = 3
-    upper_bound_of_mem_v = 5
+    lower_bound_of_cpu_v = 15
+    upper_bound_of_cpu_v = 20
+    lower_bound_of_mem_v = 2
+    upper_bound_of_mem_v = 4
     lower_bound_of_rho_v = 40
     upper_bound_of_rho_v = 50
     lower_bound_of_F_i = 1
@@ -72,7 +72,7 @@ def init(number_of_requests, number_of_VNF_types):
 
     number_of_individual = 50 # population size
     elitism_rate = 0.1
-    iteration_for_one_ga = 10
+    iteration_for_one_ga = 1000
     maximum_of_iteration_for_one_ga_crossover = 20
     maximum_of_iteration_for_one_ga_mutation = 20
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests

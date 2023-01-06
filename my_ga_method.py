@@ -36,15 +36,22 @@ def check_if_meet_mem_capacity_constraint(chromosome, data):
 def check_if_meet_delay_requirement(request, i, data):
     tau_vnf_i = 0
     tau_i = 0
+    first_vnf = -1
+    last_vnf = -1
     for vnf_1 in data.F_i[i]:
         for vnf_2 in data.F_i[i]:
             if settings.check_are_neighbors(vnf_1, vnf_2, data.F_i[i]):
                 tau_vnf_i += settings.v2v_shortest_path_length(data.G, request[vnf_1], request[vnf_2])
-    tau_i += (
-        tau_vnf_i
-        + settings.v2v_shortest_path_length(data.G, data.s_i[i], request[vnf_1])
-        + settings.v2v_shortest_path_length(data.G, data.e_i[i], request[vnf_2])
-    )
+            if settings.check_is_first_vnf(vnf_1, data.F_i[i]):
+                first_vnf = vnf_1
+            if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
+                last_vnf = vnf_1
+    tau_i += tau_vnf_i
+    if request[first_vnf] != data.s_i[i]:
+        tau_i += settings.v2v_shortest_path_length(data.G, data.s_i[i], request[first_vnf])
+    if request[last_vnf] != data.e_i[i]:
+        tau_i += settings.v2v_shortest_path_length(data.G, data.e_i[i], request[last_vnf])
+        
     if tau_i <= data.r_i[i]:
         return True
     return False
