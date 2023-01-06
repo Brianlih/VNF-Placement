@@ -50,6 +50,8 @@ def init(number_of_requests, number_of_VNF_types):
     global maximum_of_iteration_for_one_ga_crossover, maximum_of_iteration_for_one_ga_mutation
     global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
+    random.seed(1)
+    
     M = 1000000
     number_of_nodes = 4
 
