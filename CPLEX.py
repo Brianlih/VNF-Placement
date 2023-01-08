@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # Creating input data
     #--------------------------------------------------------------------------------------------
 
-    random.seed(1)
+    # random.seed(1)
 
     M = 1000000
     number_of_VNF_types = 5
@@ -72,10 +72,8 @@ if __name__ == "__main__":
     F = [i for i in range(number_of_VNF_types)]
     print("F = ", F)
     number_of_topo = 1
-    G = construct_topo("D:/python_CPLEX_projects/VNF_placement/topo/topos/"
-        + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
-    # G = construct_topo("D:/python_CPLEX_projects/VNF_placement/topo/small_topo/"
-    #     + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
+    G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
+    # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
     # nx.draw_networkx(G)
     # plt.show()
     print("number_of_nodes = ", number_of_nodes)
@@ -157,7 +155,7 @@ if __name__ == "__main__":
     # Creating the model
     #------------------------------------------------------------------------------------------
 
-    VNF_placement_model = Model("VNF_placement", log_output=True)
+    VNF_placement_model = Model("VNF_placement")
 
     #------------------------------------------------------------------------------------------
     # Creating decsision variables

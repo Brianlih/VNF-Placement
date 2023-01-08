@@ -35,7 +35,7 @@ if __name__ == "__main__":
             # Creating the model
             #------------------------------------------------------------------------------------------
 
-            VNF_placement_model = Model("VNF_placement", log_output=True)
+            VNF_placement_model = Model("VNF_placement")
 
             #------------------------------------------------------------------------------------------
             # Creating decsision variables

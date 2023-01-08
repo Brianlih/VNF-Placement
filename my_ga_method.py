@@ -3,7 +3,6 @@ import random
 from random import choice
 import networkx as nx
 import settings
-# from test import settings
 import time
 from copy import deepcopy
 
@@ -89,9 +88,12 @@ def main(data_from_cplex):
             j = i * data.number_of_VNF_types
             start = j
             last = j + data.number_of_VNF_types - 1
-            buffer_cpu = rest_cpu_v # cpu_v befor placing F_i[i]
+
+            # resources befor placing F_i[i]
+            buffer_cpu = rest_cpu_v
             buffer_mem = rest_mem_v
-            buffer_vnf_on_ndoe = vnf_on_node
+            buffer_vnf_on_node = vnf_on_node
+
             while True:
                 assigned_count = 0
                 path = all_paths_list[random.randint(0, len(all_paths_list) - 1)]
@@ -117,15 +119,16 @@ def main(data_from_cplex):
                 if assigned_count == len(data.F_i[i]):
                     break
                 else:
+                    # return to the state before placing F_i[i]
+                    rest_cpu_v = buffer_cpu
+                    rest_mem_v = buffer_mem
+                    vnf_on_node = buffer_vnf_on_node
                     if len(all_paths_list) > 0:
-                        # return to the state before placing F_i[i]
                         chromosome[start:last + 1] = [-3] * (last + 1 - start)
-                        rest_cpu_v = buffer_cpu
-                        rest_mem_v = buffer_mem
-                        vnf_on_node = buffer_vnf_on_ndoe
                         j = start
                     else:
                         # F_i[i] can not be placed on the network completely
+                        # so reject it
                         j = start
                         while j <= last:
                             if chromosome[j] != -2:

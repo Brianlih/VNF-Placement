@@ -3,3 +3,4 @@ try_code/
 result/
 __pycache__/
 test/
+.DS_Store
