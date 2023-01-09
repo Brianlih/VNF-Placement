@@ -67,7 +67,7 @@ if __name__ == "__main__":
     lower_bound_of_pi_wv = 1
     upper_bound_of_pi_wv = 10
     lower_bound_of_r_i = 50
-    upper_bound_of_r_i = 80
+    upper_bound_of_r_i = 70
 
     F = [i for i in range(number_of_VNF_types)]
     print("F = ", F)

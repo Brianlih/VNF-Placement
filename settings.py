@@ -50,8 +50,8 @@ def init(number_of_requests, number_of_VNF_types):
     global maximum_of_iteration_for_one_ga_crossover, maximum_of_iteration_for_one_ga_mutation
     global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
-    random.seed(1)
-    
+    # random.seed(1)
+
     M = 1000000
     number_of_nodes = 4
 
@@ -70,11 +70,11 @@ def init(number_of_requests, number_of_VNF_types):
     lower_bound_of_pi_wv = 1
     upper_bound_of_pi_wv = 10
     lower_bound_of_r_i = 50
-    upper_bound_of_r_i = 80
+    upper_bound_of_r_i = 70
 
     number_of_individual = 50 # population size
     elitism_rate = 0.1
-    iteration_for_one_ga = 1000
+    iteration_for_one_ga = 100
     maximum_of_iteration_for_one_ga_crossover = 20
     maximum_of_iteration_for_one_ga_mutation = 20
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests

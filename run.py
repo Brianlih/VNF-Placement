@@ -3,6 +3,7 @@ import settings
 import matplotlib.pyplot as plt
 import time
 import my_ga_method
+import my_random_method
 
 if __name__ == "__main__":
     # number_of_requests = [15]
@@ -13,22 +14,33 @@ if __name__ == "__main__":
 
     result_mean_cplex_res_value = []
     result_mean_ga_res_value = []
+    result_mean_random_res_value = []
     result_mean_cplex_time_cost = []
     result_mean_ga_time_cost = []
+    result_mean_random_time_cost = []
     for nr in range(len(number_of_requests)):
         # print("nvt: ", nvt)
         print("nr: ", nr)
         cplex_res_value = []
         ga_res_value = []
+        random_res_value = []
+
         cplex_time_cost = []
         ga_time_cost = []
+        random_time_cost = []
+
         mean_cplex_res_value = 0
         mean_ga_res_value = 0
+        mean_random_res_value = 0
+
         mean_cplex_time_cost = 0
         mean_ga_time_cost = 0
+        mean_random_time_cost = 0
+
+        # Initialize the input data
+        settings.init(number_of_requests[nr], number_of_VNF_types[0])
         for iteration in range(number_of_iteration):
-            # Initialize the input data
-            settings.init(number_of_requests[nr], number_of_VNF_types[0])
+            print("iteration: ", iteration)
                         
             start_time = time.time()
             #------------------------------------------------------------------------------------------
@@ -202,42 +214,61 @@ if __name__ == "__main__":
                 crossover_rate = settings.crossover_rate
                 mutation_rate = settings.mutation_rate
 
+            # call other methods
             ga_res = my_ga_method.main(Data)
+            random_res = my_random_method.main(Data)
+
+            # result
             ga_res_value.append(ga_res["fittest_value"])
             ga_time_cost.append(ga_res["time_cost"])
+            random_res_value.append(random_res["total_profit"])
+            random_time_cost.append(random_res["time_cost"])
 
             mean_cplex_res_value += sol.get_value(obj_fn)
             mean_ga_res_value += ga_res["fittest_value"]
+            mean_random_res_value += random_res["total_profit"]
             mean_cplex_time_cost += end_time - start_time
             mean_ga_time_cost += ga_res["time_cost"]
+            mean_random_time_cost += random_res["time_cost"]
 
         mean_cplex_res_value /= number_of_iteration
         mean_ga_res_value /= number_of_iteration
+        mean_random_res_value /= number_of_iteration
         mean_cplex_time_cost /= number_of_iteration
         mean_ga_time_cost /= number_of_iteration
+        mean_random_time_cost /= number_of_iteration
 
         result_mean_cplex_res_value.append(mean_cplex_res_value)
         result_mean_ga_res_value.append(mean_ga_res_value)
+        result_mean_random_res_value.append(mean_random_res_value)
         result_mean_cplex_time_cost.append(mean_cplex_time_cost)
         result_mean_ga_time_cost.append(mean_ga_time_cost)
+        result_mean_random_time_cost.append(mean_random_time_cost)
 
-    # print("result_mean_cplex_res_value: ", result_mean_cplex_res_value)
-    # print("result_mean_ga_res_value:", result_mean_ga_res_value)
-    # print("result_mean_cplex_time_cost: ", result_mean_cplex_time_cost)
-    # print("result_mean_ga_time_cost: ", result_mean_ga_time_cost)
+    print("result_mean_cplex_res_value: ", result_mean_cplex_res_value)
+    print("result_mean_ga_res_value:", result_mean_ga_res_value)
+    print("result_mean_random_res_value:", result_mean_random_res_value)
+    print("result_mean_cplex_time_cost: ", result_mean_cplex_time_cost)
+    print("result_mean_ga_time_cost: ", result_mean_ga_time_cost)
+    print("result_mean_random_time_cost: ", result_mean_random_time_cost)
 
     # line 1 points
-    x1 = number_of_VNF_types
+    x1 = number_of_requests
     y1 = result_mean_cplex_res_value
     plt.plot(x1, y1, 's-', color = 'r', label = "CPLEX", markersize = 8, linewidth = 2.5)
     
     # line 2 points
-    x2 = number_of_VNF_types
+    x2 = number_of_requests
     y2 = result_mean_ga_res_value
     plt.plot(x2, y2, 'o-', color = 'g', label = "GA", markersize = 8, linewidth = 2.5)
 
+    # line 3 points
+    x2 = number_of_requests
+    y2 = result_mean_random_res_value
+    plt.plot(x2, y2, 'D-', color = 'b', label = "Random", markersize = 8, linewidth = 2.5)
+
     plt.xlabel('Number of requests')
     plt.ylabel('Total profit')
-    plt.title('number_of_iteration=100, iteration_for_one_ga=1000')
+    plt.title('number_of_iteration=50, iteration_for_one_ga=50')
     plt.legend()
     plt.show()
