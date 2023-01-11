@@ -9,7 +9,7 @@ def construct_topo(filename_topo):
     quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         for i in range(len(nodes_firstColumn))]
-    # print("edge_weights = ", edge_weights)
+    print("edge_weights = ", edge_weights)
     Graph = nx.Graph()
     for i in range(len(nodes_firstColumn)):
         Graph.add_edge(nodes_firstColumn[i], nodes_secondColumn[i], weight=edge_weights[i])
@@ -74,7 +74,7 @@ def init(number_of_requests, number_of_VNF_types):
 
     number_of_individual = 50 # population size
     elitism_rate = 0.1
-    iteration_for_one_ga = 100
+    iteration_for_one_ga = 50
     maximum_of_iteration_for_one_ga_crossover = 20
     maximum_of_iteration_for_one_ga_mutation = 20
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
@@ -83,39 +83,39 @@ def init(number_of_requests, number_of_VNF_types):
     mutation_rate = 0.015
 
     F = [i for i in range(number_of_VNF_types)]
-    # print("F = ", F)
+    print("F = ", F)
     number_of_topo = 1
     # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
     G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
     # nx.draw_networkx(G)
     # plt.show()
-    # print("number_of_nodes = ", number_of_nodes)
-    # print("edges = ", G.edges())
+    print("number_of_nodes = ", number_of_nodes)
+    print("edges = ", G.edges())
 
     nodes = []
     for i in range(number_of_nodes):
         nodes.append(i)
-    # print("nodes = ", nodes)
+    print("nodes = ", nodes)
 
     cpu_v = []
     for i in range(number_of_nodes):
         cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
-    # print("cpu_v = ", cpu_v)
+    print("cpu_v = ", cpu_v)
 
     mem_v = []
     for i in range(number_of_nodes):
         mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
-    # print("mem_v = ", mem_v)
+    print("mem_v = ", mem_v)
 
     eta_f =[]
     for i in range(number_of_VNF_types):
         eta_f.append(random.randint(lower_bound_of_eta_f, upper_bound_of_eta_f))
-    # print("eta_f = ", eta_f)
+    print("eta_f = ", eta_f)
 
     cpu_f = []
     for i in range(number_of_VNF_types):
         cpu_f.append(random.randint(lower_bound_of_cpu_f, upper_bound_of_cpu_f))
-    # print("cpu_f = ", cpu_f)
+    print("cpu_f = ", cpu_f)
 
     F_i = []
     for i in range(number_of_requests):
@@ -123,7 +123,7 @@ def init(number_of_requests, number_of_VNF_types):
         number_of_needed_VNF_by_request_i = random.randint(lower_bound_of_F_i, upper_bound_of_F_i)
         tmp = random.sample(F, number_of_needed_VNF_by_request_i)
         F_i.append(tmp)
-    # print("F_i = ", F_i)
+    print("F_i = ", F_i)
 
     psi_f = []
     count = 0
@@ -135,7 +135,7 @@ def init(number_of_requests, number_of_VNF_types):
                     break
         psi_f.append(count / number_of_requests)
         count = 0
-    # print("psi_f = ", psi_f)
+    print("psi_f = ", psi_f)
 
     profit_i = []
     for i in range(number_of_requests):
@@ -143,18 +143,18 @@ def init(number_of_requests, number_of_VNF_types):
         for j in range(len(F_i[i])):
             profit += eta_f[F_i[i][j]] * (1 + psi_f[F_i[i][j]]) * cpu_f[F_i[i][j]]
         profit_i.append(profit)
-    # print("profit_i = ", profit_i)
+    print("profit_i = ", profit_i)
 
 
     r_i = []
     for i in range(number_of_requests):
         r_i.append(random.randint(lower_bound_of_r_i, upper_bound_of_r_i))
-    # print("r_i = ", r_i)
+    print("r_i = ", r_i)
 
     s_i = []
     for i in range(number_of_requests):
         s_i.append(random.randint(0, number_of_nodes - 1))
-    # print("s_i = ", s_i)
+    print("s_i = ", s_i)
 
     e_i = []
     buffer = random.randint(0, number_of_nodes - 1)
@@ -162,4 +162,5 @@ def init(number_of_requests, number_of_VNF_types):
         while(buffer == s_i[i]):
             buffer = random.randint(0, number_of_nodes - 1)
         e_i.append(buffer)
-    # print("e_i = ", e_i)
+    print("e_i = ", e_i)
+    print("---------------------------------------------------------------------------------------------------------------------------------------")

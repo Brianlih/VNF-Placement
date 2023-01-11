@@ -80,8 +80,8 @@ def main(data_from_cplex):
         chromosome = [-3] * data.number_of_gene_in_an_individual
         assign_sequence = random.sample(request_list, k=data.number_of_requests)
         vnf_on_node = [[] for i in range(data.number_of_nodes)]
-        rest_cpu_v = deepcopy(data.cpu_v)
-        rest_mem_v = deepcopy(data.mem_v)
+        rest_cpu_v = data.cpu_v
+        rest_mem_v = data.mem_v
         for i in assign_sequence:
             all_paths = nx.all_simple_paths(data.G, source=data.s_i[i], target=data.e_i[i])
             all_paths_list = list(all_paths)
@@ -90,9 +90,9 @@ def main(data_from_cplex):
             last = j + data.number_of_VNF_types - 1
 
             # resources befor placing F_i[i]
-            buffer_cpu = rest_cpu_v
-            buffer_mem = rest_mem_v
-            buffer_vnf_on_node = vnf_on_node
+            buffer_cpu = deepcopy(rest_cpu_v)
+            buffer_mem = deepcopy(rest_mem_v)
+            buffer_vnf_on_node = deepcopy(vnf_on_node)
 
             while True:
                 assigned_count = 0
@@ -104,25 +104,32 @@ def main(data_from_cplex):
                         chromosome[j] = -2
                     else:
                         for node in path:
-                            if data.cpu_f[vnf_type] <= rest_cpu_v[node]:
-                                if vnf_type not in vnf_on_node[node]:
-                                    if rest_mem_v[node] < 1:
-                                        continue
-                                    else:
-                                        vnf_on_node[node].append(vnf_type)
-                                        rest_mem_v[node] -= 1
-                                chromosome[j] = node
-                                rest_cpu_v[node] -= data.cpu_f[vnf_type]
-                                assigned_count += 1
-                                break
+                            if vnf_type not in buffer_vnf_on_node[node]:
+                                if buffer_mem[node] >= 1:
+                                    buffer_vnf_on_node[node].append(vnf_type)
+                                    buffer_mem[node] -= 1
+                                    chromosome[j] = node
+                                    buffer_cpu[node] -= data.cpu_f[vnf_type]
+                                    assigned_count += 1
+                                    break
+                            else:
+                                if data.cpu_f[vnf_type] <= buffer_cpu[node]:
+                                    chromosome[j] = node
+                                    buffer_cpu[node] -= data.cpu_f[vnf_type]
+                                    assigned_count += 1
+                                    break
                     j += 1
                 if assigned_count == len(data.F_i[i]):
-                    break
-                else:
-                    # return to the state before placing F_i[i]
+                    # update resource state
                     rest_cpu_v = buffer_cpu
                     rest_mem_v = buffer_mem
                     vnf_on_node = buffer_vnf_on_node
+                    break
+                else:
+                    # return to the state before placing F_i[i]
+                    buffer_cpu = rest_cpu_v
+                    buffer_mem = rest_mem_v
+                    buffer_vnf_on_node = vnf_on_node
                     if len(all_paths_list) > 0:
                         chromosome[start:last + 1] = [-3] * (last + 1 - start)
                         j = start
@@ -138,7 +145,7 @@ def main(data_from_cplex):
         population.append(chromosome)
 
     #------------------------------------------------------------------------------------------
-    # Calculate the fitness value of each individual, sort them in decresing order
+    # Calculate the fitness value of each individual, sort them in decreasing order
     #------------------------------------------------------------------------------------------
 
     fitness_of_chromosomes = calculate_fitness_value(population, data)
@@ -266,6 +273,7 @@ def main(data_from_cplex):
         it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]
+    # print("GA solution: ", solution)
     fittest_value = fittest[-1]
     end_time = time.time()
     time_cost = end_time - start_time

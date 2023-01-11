@@ -32,15 +32,15 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
 def main(data_from_cplex):
     data = data_from_cplex
     start_time = time.time()
-    buffer_z = [1] * data.number_of_requests
+    buffer_z = [0] * data.number_of_requests
     request_assign_node = [[] for i in range(data.number_of_requests)]
-    for i in range(len(request_assign_node)):
+    for i in range(data.number_of_requests):
         for j in range(data.number_of_VNF_types):
             request_assign_node[i].append(-2)
 
     vnf_on_node = [[] for i in range(data.number_of_nodes)]
-    rest_cpu_v = deepcopy(data.cpu_v)
-    rest_mem_v = deepcopy(data.mem_v)
+    rest_cpu_v = data.cpu_v
+    rest_mem_v = data.mem_v
     buffer_F_i = deepcopy(data.F_i)
     while len(buffer_F_i) > 0:
         # randomly select a request
@@ -53,10 +53,10 @@ def main(data_from_cplex):
         all_paths_list = list(all_paths)
 
         # resources befor placing request
-        buffer_cpu = rest_cpu_v
-        buffer_mem = rest_mem_v
-        buffer_vnf_on_node = vnf_on_node
-
+        buffer_cpu = deepcopy(rest_cpu_v)
+        buffer_mem = deepcopy(rest_mem_v)
+        buffer_vnf_on_node = deepcopy(vnf_on_node)
+        buffer_request_assign_node = deepcopy(request_assign_node)
         while True:
             assigned_count = 0
             
@@ -66,31 +66,42 @@ def main(data_from_cplex):
 
             for vnf_type in range(data.number_of_VNF_types):
                 if vnf_type not in request:
-                    request_assign_node[r_index][vnf_type] = -1
+                    buffer_request_assign_node[r_index][vnf_type] = -1
                 else:
                     for node in path:
-                        if data.cpu_f[vnf_type] <= rest_cpu_v[node]:
-                            if vnf_type not in vnf_on_node[node]:
-                                if rest_mem_v[node] > 1:
-                                    vnf_on_node[node].append(vnf_type)
-                                    rest_mem_v[node] -= 1
-                            request_assign_node[r_index][vnf_type] = node
-                            rest_cpu_v[node] -= data.cpu_f[vnf_type]
-                            assigned_count += 1
-                            break
-            if (check_if_meet_delay_requirement(request_assign_node, r_index, data) and
+                        if vnf_type not in buffer_vnf_on_node[node]:
+                            if buffer_mem[node] >= 1:
+                                buffer_vnf_on_node[node].append(vnf_type)
+                                buffer_mem[node] -= 1
+                                buffer_request_assign_node[r_index][vnf_type] = node
+                                buffer_cpu[node] -= data.cpu_f[vnf_type]
+                                assigned_count += 1
+                                break
+                        else:
+                            if data.cpu_f[vnf_type] <= buffer_cpu[node]:
+                                buffer_request_assign_node[r_index][vnf_type] = node
+                                buffer_cpu[node] -= data.cpu_f[vnf_type]
+                                assigned_count += 1
+                                break
+            if (check_if_meet_delay_requirement(buffer_request_assign_node, r_index, data) and
                 assigned_count == len(request)):
-                break
-            else:
-                # return to the state before placing request
                 rest_cpu_v = buffer_cpu
                 rest_mem_v = buffer_mem
                 vnf_on_node = buffer_vnf_on_node
+                request_assign_node = buffer_request_assign_node
+                buffer_z[r_index] = 1
+                break
+            else:
+                # return to the state before placing request
+                buffer_cpu = rest_cpu_v
+                buffer_mem = rest_mem_v
+                buffer_vnf_on_node = vnf_on_node
+                buffer_request_assign_node = request_assign_node
                 if len(all_paths_list) <= 0:
                     # request can not be placed on the network completely
                     # so reject it
-                    buffer_z[r_index] = 0
                     break
+    # print("Random solution: ", request_assign_node)
     end_time = time.time()
     time_cost = end_time - start_time
     total_profit = 0
