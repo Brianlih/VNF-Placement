@@ -101,6 +101,7 @@ def main(data_from_cplex):
                     # request can not be placed on the network completely
                     # so reject it
                     break
+
     # print("Random solution: ", request_assign_node)
     end_time = time.time()
     time_cost = end_time - start_time
