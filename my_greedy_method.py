@@ -28,14 +28,15 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
         return True
     return False
 
-def calculate_paths_value(paths, request, request_needed_cpu, rest_mem_v, data):
+def calculate_paths_value(paths, request, request_needed_cpu, rest_cpu_v, data):
     request_index = data.F_i.index(request)
     paths_rest_cpu = []
     for i in range(len(paths)):
         rest_cpu_count = 0
         for j in range(len(paths[i])):
-            rest_cpu_count += rest_mem_v[paths[i][j]]
+            rest_cpu_count += rest_cpu_v[paths[i][j]]
         paths_rest_cpu.append(rest_cpu_count)
+
     paths_value = []
     for i in range(len(paths)):
         paths_value.append(paths_rest_cpu[i] / request_needed_cpu[request_index])
@@ -80,7 +81,7 @@ def main(data_from_cplex):
         # find all path
         all_paths = nx.all_simple_paths(data.G, source=data.s_i[r_index], target=data.e_i[r_index])
         all_paths_list = list(all_paths)
-        path_values = calculate_paths_value(all_paths_list, data.F_i[r_index], request_needed_cpu, rest_mem_v, data)
+        path_values = calculate_paths_value(all_paths_list, data.F_i[r_index], request_needed_cpu, rest_cpu_v, data)
         sorted_paths = [p for _,p in sorted(zip(path_values,all_paths_list), reverse=True)]
 
         # resources befor placing request

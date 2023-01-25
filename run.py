@@ -1,6 +1,6 @@
 from docplex.mp.model import Model
 import matplotlib.pyplot as plt
-import time
+import time, random
 import settings, settings_per_iteration, pre_settings
 import my_ga_method, my_random_method, my_greedy_method
 
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     number_of_requests = [15, 20, 25, 30, 35, 40, 45, 50, 55]
     number_of_VNF_types = [5]
     # number_of_VNF_types = [5, 10, 15, 20, 25, 30, 35, 40, 45]
-    number_of_iteration = 200
+    number_of_iteration = 50
 
     result_mean_cplex_res_value = []
     result_mean_ga_res_value = []
@@ -22,11 +22,14 @@ if __name__ == "__main__":
 
     # Initialize the input data
     pre_settings.init()
+    seed = random.randint(0, 238467)
 
     for nr in range(len(number_of_requests)):
         # print("---------------------------------------------------------------------------------------------------------------------------------------")
         # print("number of VNF types: ", number_of_VNF_types[0])
         print("number of request: ", number_of_requests[nr])
+        cplex_res = 0
+
         cplex_res_value = []
         ga_res_value = []
         random_res_value = []
@@ -48,7 +51,7 @@ if __name__ == "__main__":
         mean_greedy_time_cost = 0
 
         # Initialize the input data
-        settings.init(number_of_requests[nr], number_of_VNF_types[0])
+        settings.init(number_of_requests[nr], number_of_VNF_types[0], seed)
 
         for iteration in range(number_of_iteration):
             # Initialize the input data for each iteration
@@ -196,8 +199,10 @@ if __name__ == "__main__":
             sol = VNF_placement_model.solve()
             if sol:
                 cplex_res_value.append(sol.get_value(obj_fn))
+                cplex_res = sol.get_value(obj_fn)
             else:
                 cplex_res_value.append(0)
+                cplex_res = 0
 
             end_time = time.time()
             cplex_time_cost.append(end_time - start_time)
@@ -241,7 +246,7 @@ if __name__ == "__main__":
             greedy_res_value.append(greedy_res["total_profit"])
             greedy_time_cost.append(greedy_res["time_cost"])
 
-            mean_cplex_res_value += sol.get_value(obj_fn)
+            mean_cplex_res_value += cplex_res
             mean_ga_res_value += ga_res["fittest_value"]
             mean_random_res_value += random_res["total_profit"]
             mean_greedy_res_value += greedy_res["total_profit"]
@@ -299,6 +304,6 @@ if __name__ == "__main__":
 
     plt.xlabel('Number of requests')
     plt.ylabel('Profit')
-    plt.title('number_of_iteration=100, iteration_for_one_ga=50')
+    plt.title('number_of_iteration=50, iteration_for_one_ga=50')
     plt.legend()
     plt.show()
