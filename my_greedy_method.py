@@ -28,8 +28,8 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
         return True
     return False
 
-def calculate_paths_value(paths, request, request_needed_cpu, rest_cpu_v, data):
-    request_index = data.F_i.index(request)
+def calculate_paths_value(paths, r_index, request_needed_cpu, rest_cpu_v, data):
+    request_index = data.F_i.index(data.F_i[r_index])
     paths_rest_cpu = []
     for i in range(len(paths)):
         rest_cpu_count = 0
@@ -52,39 +52,42 @@ def calculate_requests_needed_cpu(data):
         request_needed_cpu.append(cpu_count)
     return request_needed_cpu
 
-def sort_requests(requests, request_needed_cpu, data):
+def sort_requests(request_needed_cpu, data):
     request_value = []
     for i in range(len(data.F_i)):
         request_value.append(data.profit_i[i] / request_needed_cpu[i])
-    sorted_requests = [r for _,r in sorted(zip(request_value,requests), reverse=True)]
+    sorted_requests = [r for _,r in sorted(zip(request_value,data.F_i), reverse=True)]
     return sorted_requests
 
 def main(data_from_cplex):
     data = data_from_cplex
     start_time = time.time()
-    buffer_z = [0] * data.number_of_requests
-    request_assign_node = [[] for i in range(data.number_of_requests)]
+
+    # Initialize decision variables
+    buffer_z = [0] * data.number_of_requests # z
+    vnf_on_node = [[] for i in range(data.number_of_nodes)] # y
+    request_assign_node = [[] for i in range(data.number_of_requests)] # x
     for i in range(data.number_of_requests):
         for j in range(data.number_of_VNF_types):
             request_assign_node[i].append(-2)
     
     request_needed_cpu = calculate_requests_needed_cpu(data)
-    sorted_requests = sort_requests(data.F_i, request_needed_cpu, data)
-    vnf_on_node = [[] for i in range(data.number_of_nodes)]
+    sorted_requests = sort_requests(request_needed_cpu, data)
+    
     rest_cpu_v = data.cpu_v
     rest_mem_v = data.mem_v
-    sorted_request_index = 0
-    while sorted_request_index < len(sorted_requests):
-        request = sorted_requests[sorted_request_index]
+    sr_index = 0
+    while sr_index < len(sorted_requests):
+        request = sorted_requests[sr_index]
         r_index = data.F_i.index(request)
 
-        # find all path
+        # Find all path and sort them with value
         all_paths = nx.all_simple_paths(data.G, source=data.s_i[r_index], target=data.e_i[r_index])
         all_paths_list = list(all_paths)
-        path_values = calculate_paths_value(all_paths_list, data.F_i[r_index], request_needed_cpu, rest_cpu_v, data)
+        path_values = calculate_paths_value(all_paths_list, r_index, request_needed_cpu, rest_cpu_v, data)
         sorted_paths = [p for _,p in sorted(zip(path_values,all_paths_list), reverse=True)]
 
-        # resources befor placing request
+        # Resources befor placing request
         buffer_cpu = deepcopy(rest_cpu_v)
         buffer_mem = deepcopy(rest_mem_v)
         buffer_vnf_on_node = deepcopy(vnf_on_node)
@@ -99,7 +102,7 @@ def main(data_from_cplex):
                 else:
                     for node in path:
                         if vnf_type not in buffer_vnf_on_node[node]:
-                            if buffer_mem[node] >= 1:
+                            if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
                                 buffer_vnf_on_node[node].append(vnf_type)
                                 buffer_mem[node] -= 1
                                 buffer_request_assign_node[r_index][vnf_type] = node
@@ -121,17 +124,17 @@ def main(data_from_cplex):
                 buffer_z[r_index] = 1
                 break
             else:
-                # return to the state before placing request
+                # Return to the state before placing request
                 buffer_cpu = rest_cpu_v
                 buffer_mem = rest_mem_v
                 buffer_vnf_on_node = vnf_on_node
                 buffer_request_assign_node = request_assign_node
-                if path_index == len(sorted_paths) -1 :
-                    # request can not be placed on the network completely
+                if path_index == len(sorted_paths) - 1:
+                    # Request can not be placed on the network completely
                     # so reject it
                     break
             path_index += 1
-        sorted_request_index += 1
+        sr_index += 1
 
     # print("greedy solution: ", request_assign_node)
     end_time = time.time()
