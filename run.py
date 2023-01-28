@@ -1,15 +1,20 @@
 from docplex.mp.model import Model
 import matplotlib.pyplot as plt
-import time, random
-import settings, settings_per_iteration, pre_settings
-import my_ga_method, my_random_method, my_greedy_method
+import time
+import random
+import settings
+import settings_per_iteration
+import pre_settings
+import my_ga_method
+import my_random_method
+import my_greedy_method
 
 if __name__ == "__main__":
     # number_of_requests = [15]
     number_of_requests = [15, 20, 25, 30, 35, 40, 45, 50, 55]
     number_of_VNF_types = [5]
     # number_of_VNF_types = [5, 10, 15, 20, 25, 30, 35, 40, 45]
-    number_of_iteration = 50
+    number_of_iteration = 1
 
     result_mean_cplex_res_value = []
     result_mean_ga_res_value = []
@@ -25,7 +30,6 @@ if __name__ == "__main__":
     seed = random.randint(0, 238467)
 
     for nr in range(len(number_of_requests)):
-        # print("---------------------------------------------------------------------------------------------------------------------------------------")
         # print("number of VNF types: ", number_of_VNF_types[0])
         print("number of request: ", number_of_requests[nr])
         cplex_res = 0
@@ -55,20 +59,22 @@ if __name__ == "__main__":
 
         for iteration in range(number_of_iteration):
             # Initialize the input data for each iteration
-            settings_per_iteration.init(number_of_requests[nr], number_of_VNF_types[0])
-                        
+            settings_per_iteration.init(
+                number_of_requests[nr], number_of_VNF_types[0])
+
             start_time = time.time()
-            #------------------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------------------
             # Creating the model
-            #------------------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------------------
 
             VNF_placement_model = Model("VNF_placement")
 
-            #------------------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------------------
             # Creating decsision variables
-            #------------------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------------------
 
-            z = VNF_placement_model.binary_var_dict(number_of_requests[nr], name="z")
+            z = VNF_placement_model.binary_var_dict(
+                number_of_requests[nr], name="z")
             x = VNF_placement_model.binary_var_dict((
                 (i, f, v)
                 for i in range(number_of_requests[nr])
@@ -83,9 +89,9 @@ if __name__ == "__main__":
                 name="y"
             )
 
-            #-------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------
             # Adding the constraints
-            #-------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------
 
             # Delay requirement constraint
             tau_vnf_i = []
@@ -130,7 +136,8 @@ if __name__ == "__main__":
 
             tau_i = []
             for i in range(len(tau_ending_i)):
-                tau_i.append(tau_vnf_i[i] + tau_starting_i[i] + tau_ending_i[i])
+                tau_i.append(tau_vnf_i[i] +
+                             tau_starting_i[i] + tau_ending_i[i])
 
             sequence = set()
             removed_set = set()
@@ -138,7 +145,8 @@ if __name__ == "__main__":
                 sequence.add(i)
             for i in range(number_of_requests[nr]):
                 if len(settings_per_iteration.F_i[i]) <= 1:
-                    VNF_placement_model.add_constraint(tau_i[i] <= settings.M * (1-z[i]) + settings_per_iteration.r_i[i])
+                    VNF_placement_model.add_constraint(
+                        tau_i[i] <= settings.M * (1-z[i]) + settings_per_iteration.r_i[i])
                     removed_set.add(i)
             sequence -= removed_set
 
@@ -157,7 +165,8 @@ if __name__ == "__main__":
 
             # Relation between z and x constraint
             VNF_placement_model.add_constraints((
-                sum(x[i, f, v] for v in range(pre_settings.number_of_nodes)) == z[i]
+                sum(x[i, f, v]
+                    for v in range(pre_settings.number_of_nodes)) == z[i]
                 for i in range(number_of_requests[nr])
                 for f in settings_per_iteration.F_i[i]),
                 names="relation_between_z_and_x"
@@ -177,21 +186,25 @@ if __name__ == "__main__":
                 occupied_cpu_resources = 0
                 for i in range(number_of_requests[nr]):
                     for f in settings_per_iteration.F_i[i]:
-                        occupied_cpu_resources += x[i, f, v] * settings.cpu_f[f]
-                VNF_placement_model.add_constraint(occupied_cpu_resources <= pre_settings.cpu_v[v])
-            
+                        occupied_cpu_resources += x[i,
+                                                    f, v] * settings.cpu_f[f]
+                VNF_placement_model.add_constraint(
+                    occupied_cpu_resources <= pre_settings.cpu_v[v])
+
             # Memory capacity constraint
             for v in range(pre_settings.number_of_nodes):
                 occupied_mem_resources = 0
                 for f in settings.F:
                     occupied_mem_resources += y[f, v]
-                VNF_placement_model.add_constraint(occupied_mem_resources <= pre_settings.mem_v[v])
+                VNF_placement_model.add_constraint(
+                    occupied_mem_resources <= pre_settings.mem_v[v])
 
-            #-------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------
             # Defineing the objective function
-            #-------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------
 
-            obj_fn = sum(z[i] * settings_per_iteration.profit_i[i] for i in range(number_of_requests[nr]))
+            obj_fn = sum(z[i] * settings_per_iteration.profit_i[i]
+                         for i in range(number_of_requests[nr]))
 
             VNF_placement_model.set_objective('max', obj_fn)
 
@@ -226,9 +239,8 @@ if __name__ == "__main__":
                 number_of_individual = settings.number_of_individual
                 number_of_gene_in_an_individual = settings.number_of_gene_in_an_individual
                 elitism_rate = settings.elitism_rate
-                iteration_for_one_ga = settings.iteration_for_one_ga
-                maximum_of_iteration_for_one_ga_crossover = settings.maximum_of_iteration_for_one_ga_crossover
-                maximum_of_iteration_for_one_ga_mutation = settings.maximum_of_iteration_for_one_ga_mutation
+                iteration_for_ga = settings.iteration_for_ga
+                max_iter_cro_mut = settings.max_iter_cro_mut
                 number_of_individual_chose_from_population_for_tournament = settings.number_of_individual_chose_from_population_for_tournament
                 crossover_rate = settings.crossover_rate
                 mutation_rate = settings.mutation_rate
@@ -285,25 +297,28 @@ if __name__ == "__main__":
     # line 1 points
     x1 = number_of_requests
     y1 = result_mean_cplex_res_value
-    plt.plot(x1, y1, 's-', color = 'r', label = "CPLEX", markersize = 8, linewidth = 2.5)
-    
+    plt.plot(x1, y1, 's-', color='r', label="CPLEX",
+             markersize=8, linewidth=2.5)
+
     # line 2 points
     x2 = number_of_requests
     y2 = result_mean_ga_res_value
-    plt.plot(x2, y2, 'o-', color = 'g', label = "GA", markersize = 8, linewidth = 2.5)
+    plt.plot(x2, y2, 'o-', color='g', label="GA", markersize=8, linewidth=2.5)
 
     # line 3 points
     x2 = number_of_requests
     y2 = result_mean_random_res_value
-    plt.plot(x2, y2, 'D-', color = 'b', label = "Random", markersize = 8, linewidth = 2.5)
+    plt.plot(x2, y2, 'D-', color='b', label="Random",
+             markersize=8, linewidth=2.5)
 
     # line 4 points
     x2 = number_of_requests
     y2 = result_mean_greedy_res_value
-    plt.plot(x2, y2, '*-', color = 'y', label = "Greedy", markersize = 8, linewidth = 2.5)
+    plt.plot(x2, y2, '*-', color='y', label="Greedy",
+             markersize=8, linewidth=2.5)
 
     plt.xlabel('Number of requests')
     plt.ylabel('Profit')
-    plt.title('number_of_iteration=50, iteration_for_one_ga=50')
+    plt.title('number_of_iteration=50, iteration_for_ga=50')
     plt.legend()
     plt.show()

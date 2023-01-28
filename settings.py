@@ -27,9 +27,8 @@ def check_is_last_vnf(f, arr):
 
 def init(number_of_requests, number_of_VNF_types, seed):
     global M, F, G, nodes, cpu_v, mem_v, eta_f, cpu_f
-    global number_of_individual, number_of_gene_in_an_individual, elitism_rate, iteration_for_one_ga
-    global maximum_of_iteration_for_one_ga_crossover, maximum_of_iteration_for_one_ga_mutation
-    global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
+    global number_of_individual, number_of_gene_in_an_individual, elitism_rate, iteration_for_ga
+    global max_iter_cro_mut, number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
     M = 1000000
 
@@ -40,9 +39,10 @@ def init(number_of_requests, number_of_VNF_types, seed):
 
     number_of_individual = 50 # population size
     elitism_rate = 0.1
-    iteration_for_one_ga = 50
-    maximum_of_iteration_for_one_ga_crossover = 50
-    maximum_of_iteration_for_one_ga_mutation = 50
+    iteration_for_ga = 1
+    max_iter_cro_mut = 50
+    # maximum_of_iteration_for_ga_crossover = 50
+    # maximum_of_iteration_for_ga_mutation = 50
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5
     crossover_rate = 0.5
