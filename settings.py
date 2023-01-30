@@ -39,10 +39,8 @@ def init(number_of_requests, number_of_VNF_types, seed):
 
     number_of_individual = 50 # population size
     elitism_rate = 0.1
-    iteration_for_ga = 1
-    max_iter_cro_mut = 50
-    # maximum_of_iteration_for_ga_crossover = 50
-    # maximum_of_iteration_for_ga_mutation = 50
+    iteration_for_ga = 50
+    max_iter_cro_mut = 15
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5
     crossover_rate = 0.5

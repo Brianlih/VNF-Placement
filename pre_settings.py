@@ -34,20 +34,20 @@ def init():
     G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
     # nx.draw_networkx(G)
     # plt.show()
-    # print("number_of_nodes = ", number_of_nodes)
-    # print("edges = ", G.edges())
+    print("number_of_nodes = ", number_of_nodes)
+    print("edges = ", G.edges())
 
     nodes = []
     for i in range(number_of_nodes):
         nodes.append(i)
-    # print("nodes = ", nodes)
+    print("nodes = ", nodes)
 
     cpu_v = []
     for i in range(number_of_nodes):
         cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
-    # print("cpu_v = ", cpu_v)
+    print("cpu_v = ", cpu_v)
 
     mem_v = []
     for i in range(number_of_nodes):
         mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
-    # print("mem_v = ", mem_v)
+    print("mem_v = ", mem_v)
