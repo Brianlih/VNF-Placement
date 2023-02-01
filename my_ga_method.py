@@ -125,7 +125,7 @@ def main(data_from_cplex):
                     else:
                         for node in path:
                             if vnf_type not in buffer_vnf_on_node[node]:
-                                if buffer_mem[node] >= 1:
+                                if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
                                     buffer_vnf_on_node[node].append(vnf_type)
                                     buffer_mem[node] -= 1
                                     chromosome[j] = node
