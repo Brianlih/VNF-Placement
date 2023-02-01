@@ -100,8 +100,8 @@ def main(data_from_cplex):
         chromosome = [-3] * data.number_of_gene_in_an_individual
         assign_sequence = random.sample(request_list, k=data.number_of_requests)
         vnf_on_node = [[] for i in range(data.number_of_nodes)]
-        rest_cpu_v = data.cpu_v
-        rest_mem_v = data.mem_v
+        rest_cpu_v = deepcopy(data.cpu_v)
+        rest_mem_v = deepcopy(data.mem_v)
         for i in assign_sequence:
             all_paths = nx.all_simple_paths(data.G, source=data.s_i[i], target=data.e_i[i])
             all_paths_list = list(all_paths)

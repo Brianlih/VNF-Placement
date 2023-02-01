@@ -39,8 +39,8 @@ def main(data_from_cplex):
             request_assign_node[i].append(-2)
 
     vnf_on_node = [[] for i in range(data.number_of_nodes)]
-    rest_cpu_v = data.cpu_v
-    rest_mem_v = data.mem_v
+    rest_cpu_v = deepcopy(data.cpu_v)
+    rest_mem_v = deepcopy(data.mem_v)
     buffer_F_i = deepcopy(data.F_i)
     while len(buffer_F_i) > 0:
         # randomly select a request
