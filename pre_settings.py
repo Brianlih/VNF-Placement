@@ -26,7 +26,7 @@ def init():
     upper_bound_of_cpu_v = 20
     lower_bound_of_mem_v = 2
     upper_bound_of_mem_v = 4
-    lower_bound_of_pi_wv = 1
+    lower_bound_of_pi_wv = 2
     upper_bound_of_pi_wv = 10
 
     number_of_topo = 1

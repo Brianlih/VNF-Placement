@@ -1,6 +1,4 @@
-import numpy as np
 import random
-from random import choice
 import networkx as nx
 import settings
 import time

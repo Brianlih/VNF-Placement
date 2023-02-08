@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 import networkx as nx
-import settings
+import settings, pre_settings
 
 def check_if_meet_delay_requirement(request_assign_node, i, data):
     tau_vnf_i = 0
@@ -11,36 +11,62 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
     for vnf_1 in data.F_i[i]:
         for vnf_2 in data.F_i[i]:
             if settings.check_are_neighbors(vnf_1, vnf_2, data.F_i[i]):
-                tau_vnf_i += settings.v2v_shortest_path_length(data.G, request_assign_node[i][vnf_1], request_assign_node[i][vnf_2])
+                tau_vnf_i += settings.v2v_shortest_path_length(
+                    data.G,
+                    request_assign_node[i][vnf_1],
+                    request_assign_node[i][vnf_2])
             if settings.check_is_first_vnf(vnf_1, data.F_i[i]):
                 first_vnf = vnf_1
             if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
                 last_vnf = vnf_1
     tau_i += tau_vnf_i
     if request_assign_node[i][first_vnf] != data.s_i[i]:
-        tau_i += settings.v2v_shortest_path_length(data.G, data.s_i[i], request_assign_node[i][first_vnf])
+        tau_i += settings.v2v_shortest_path_length(
+            data.G,
+            data.s_i[i],
+            request_assign_node[i][first_vnf])
     if request_assign_node[i][last_vnf] != data.e_i[i]:
-        tau_i += settings.v2v_shortest_path_length(data.G, data.e_i[i], request_assign_node[i][last_vnf])
+        tau_i += settings.v2v_shortest_path_length(
+            data.G,
+            data.e_i[i],
+            request_assign_node[i][last_vnf])
         
     if tau_i <= data.r_i[i]:
         return True
     return False
 
-def calculate_paths_value(paths, r_index, request_needed_cpu, rest_cpu_v, data):
-    request_index = data.F_i.index(data.F_i[r_index])
+def calculate_rest_cpu_of_paths(paths, rest_cpu_v):
     paths_rest_cpu = []
     for i in range(len(paths)):
         rest_cpu_count = 0
         for j in range(len(paths[i])):
             rest_cpu_count += rest_cpu_v[paths[i][j]]
         paths_rest_cpu.append(rest_cpu_count)
+    return paths_rest_cpu
 
-    paths_value = []
+def calculate_paths_length(paths):
+    path_lens = []
     for i in range(len(paths)):
-        paths_value.append(paths_rest_cpu[i] / request_needed_cpu[request_index])
+        path_lens.append(
+            settings.v2v_shortest_path_length(
+            pre_settings.G,
+            paths[i][0],
+            paths[i][-1]))
+    return path_lens
+
+def calculate_paths_value(paths, paths_rest_cpu, path_lens):
+    paths_value = []
+    max_path_rc = max(paths_rest_cpu)
+    min_path_rc = min(paths_rest_cpu)
+    max_pl = max(path_lens)
+    min_pl = min(path_lens)
+    for i in range(len(paths)):
+        paths_value.append(((paths_rest_cpu[i] - min_path_rc + 1)
+                            / (max_path_rc - min_path_rc + 1))
+                            / ((path_lens[i] - min_pl + 1)
+                            / (max_pl - min_pl + 1)))
     return paths_value
 
-    
 def calculate_requests_needed_cpu(data):
     request_needed_cpu = []
     for i in range(len(data.F_i)):
@@ -52,28 +78,60 @@ def calculate_requests_needed_cpu(data):
 
 def sort_requests(request_needed_cpu, data):
     request_value = []
+    max_c = max(request_needed_cpu)
+    min_c = min(request_needed_cpu)
     for i in range(len(data.F_i)):
-        request_value.append(data.profit_i[i] / request_needed_cpu[i])
-    sorted_requests = sorted(data.F_i, key= lambda request : request_value[data.F_i.index(request)], reverse=True)
+        max_p = max(data.profit_i)
+        min_p = min(data.profit_i)
+        request_value.append(((data.profit_i[i] - min_p + 1) / (max_p - min_p + 1))
+            / ((request_needed_cpu[i] - min_c + 1) / (max_c - min_c + 1)))
+            
+    sorted_requests = sorted(
+        data.F_i,
+        key= lambda request : request_value[data.F_i.index(request)],
+        reverse=True)
+    
     return sorted_requests
+
+def calculate_two_phase_length_of_nodes(path, pre_node, r_index, data):
+    two_phases_len = []
+    for i in range(len(path)):
+        length = settings.v2v_shortest_path_length(
+                data.G,
+                pre_node,
+                i)
+        length += settings.v2v_shortest_path_length(
+                data.G,
+                i,
+                data.e_i[r_index])
+        two_phases_len.append(length)
+    return two_phases_len
 
 def sort_nodes_in_path(path, rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
     node_value = []
     is_first_vnf = settings.check_is_first_vnf(vnf_type, data.F_i[r_index])
+    pre_vnf_index = data.F_i[r_index].index(vnf_type) - 1
+    pre_vnf = data.F_i[r_index][pre_vnf_index]
+    if is_first_vnf:
+        pre_node = data.s_i[r_index]
+    else:
+        pre_node = buffer_request_assign_node[r_index][pre_vnf]
+    two_phases_len = calculate_two_phase_length_of_nodes(path, pre_node, r_index, data)
+    max_tpl = max(two_phases_len)
+    min_tpl = min(two_phases_len)
+    max_rc = max(rest_cpu_v)
+    min_rc = min(rest_cpu_v)
     for i in range(len(path)):
-        if rest_cpu_v[i] <= 0:
-            node_value.append(100000)
-        elif is_first_vnf:
-            length = settings.v2v_shortest_path_length(data.G, data.s_i[r_index], i)
-            node_value.append(length / rest_cpu_v[i])
-        else:
-            pre_vnf_index = data.F_i[r_index].index(vnf_type) - 1
-            pre_vnf = data.F_i[r_index][pre_vnf_index]
-            if buffer_request_assign_node[r_index][pre_vnf] < 0:
-                a = 1
-            length = settings.v2v_shortest_path_length(data.G, buffer_request_assign_node[r_index][pre_vnf], i)
-            node_value.append(length / rest_cpu_v[i])
-    sorted_nodes = sorted(path, key= lambda node : node_value[path.index(node)])
+        node_value.append(
+            ((rest_cpu_v[i] - min_rc + 1)
+            / (max_rc - min_rc + 1))
+            / ((two_phases_len[i] - min_tpl + 1)
+                / (max_tpl - min_tpl + 1)))
+    sorted_nodes = sorted(
+        path,
+        key= lambda node : node_value[path.index(node)],
+        reverse=True)
+    
     return sorted_nodes
 
 def main(data_from_cplex):
@@ -101,7 +159,9 @@ def main(data_from_cplex):
         # Find all path and sort them with value
         all_paths = nx.all_simple_paths(data.G, source=data.s_i[r_index], target=data.e_i[r_index])
         all_paths_list = list(all_paths)
-        path_values = calculate_paths_value(all_paths_list, r_index, request_needed_cpu, rest_cpu_v, data)
+        paths_rest_cpu = calculate_rest_cpu_of_paths(all_paths_list, rest_cpu_v)
+        path_lens = calculate_paths_length(all_paths_list)
+        path_values = calculate_paths_value(all_paths_list, paths_rest_cpu, path_lens)
         sorted_paths = sorted(all_paths_list, key= lambda path : path_values[all_paths_list.index(path)], reverse=True)
 
         # Resources befor placing request
@@ -109,6 +169,8 @@ def main(data_from_cplex):
         buffer_mem = deepcopy(rest_mem_v)
         buffer_vnf_on_node = deepcopy(vnf_on_node)
         buffer_request_assign_node = deepcopy(request_assign_node)
+
+        # Greedy
         path_index = 0
         while True:
             path = sorted_paths[path_index]
@@ -161,11 +223,14 @@ def main(data_from_cplex):
     end_time = time.time()
     time_cost = end_time - start_time
     total_profit = 0
+    acc_count = 0
     for i in range(data.number_of_requests):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
+            acc_count += 1
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost
     }
+    print("acc_count: ", acc_count)
     return res

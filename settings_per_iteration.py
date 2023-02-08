@@ -37,7 +37,6 @@ def init(number_of_requests, number_of_VNF_types):
         profit_i.append(profit)
     print("profit_i = ", profit_i)
 
-
     r_i = []
     for i in range(number_of_requests):
         r_i.append(random.randint(lower_bound_of_r_i, upper_bound_of_r_i))

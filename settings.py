@@ -26,9 +26,9 @@ def check_is_last_vnf(f, arr):
     return 0
 
 def init(number_of_requests, number_of_VNF_types, seed):
-    global M, F, G, nodes, cpu_v, mem_v, eta_f, cpu_f
+    global M, F, nodes, eta_f, cpu_f, max_iter_cro_mut
     global number_of_individual, number_of_gene_in_an_individual, elitism_rate, iteration_for_ga
-    global max_iter_cro_mut, number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
+    global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
     M = 1000000
 

@@ -1,13 +1,17 @@
 from docplex.mp.model import Model
 import matplotlib.pyplot as plt
-import time
-import random
-import settings
-import settings_per_iteration
-import pre_settings
-import my_ga_method
-import my_random_method
-import my_greedy_method
+import time, random
+import settings, pre_settings, settings_per_iteration
+import my_ga_method, my_random_method, my_greedy_method
+
+def calculate_requests_needed_cpu():
+    request_needed_cpu = []
+    for i in range(len(settings_per_iteration.F_i)):
+        cpu_count = 0
+        for j in range(len(settings_per_iteration.F_i[i])):
+            cpu_count += settings.cpu_f[settings_per_iteration.F_i[i][j]]
+        request_needed_cpu.append(cpu_count)
+    return request_needed_cpu
 
 if __name__ == "__main__":
     # number_of_requests = [15]
@@ -59,8 +63,34 @@ if __name__ == "__main__":
 
         for iteration in range(number_of_iteration):
             # Initialize the input data for each iteration
-            settings_per_iteration.init(
-                number_of_requests[nr], number_of_VNF_types[0])
+            settings_per_iteration.init(number_of_requests[nr], number_of_VNF_types[0])
+
+            request_needed_cpu = calculate_requests_needed_cpu()
+            max_c = max(request_needed_cpu)
+            min_c = min(request_needed_cpu)
+            request_value = []
+            for i in range(number_of_requests[nr]):
+                max_p = max(settings_per_iteration.profit_i)
+                min_p = min(settings_per_iteration.profit_i)
+                if request_needed_cpu[i] == min_c:
+                    # Avoiding "devided by zero"
+                    request_value.append(
+                        (settings_per_iteration.profit_i[i] - min_p)
+                        / (max_p - min_p)
+                    )
+                else:
+                    request_value.append(
+                        ((settings_per_iteration.profit_i[i] - min_p)
+                         / (max_p - min_p))
+                        / ((request_needed_cpu[i] - min_c)
+                            / (max_c - min_c))
+                    )
+            print("request_value: ", request_value)
+            a_count = 0
+            for a in range(number_of_requests[nr]):
+                a_count += request_value[a]
+            average_request_value = a_count / number_of_requests[nr]
+            print("average_request_value: ", average_request_value)
 
             start_time = time.time()
             # ------------------------------------------------------------------------------------------
