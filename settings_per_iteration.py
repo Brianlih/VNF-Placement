@@ -4,10 +4,10 @@ import settings, pre_settings
 def init(number_of_requests, number_of_VNF_types):
     global F_i, profit_i, r_i, s_i, e_i
 
-    lower_bound_of_F_i = 1
-    upper_bound_of_F_i = 5
-    lower_bound_of_r_i = 50
-    upper_bound_of_r_i = 70
+    lower_bound_of_F_i = 2
+    upper_bound_of_F_i = 4
+    lower_bound_of_r_i = 2 * pre_settings.lower_bound_of_pi_wv
+    upper_bound_of_r_i = 2 * pre_settings.upper_bound_of_pi_wv
 
     F_i = []
     for i in range(number_of_requests):
@@ -39,7 +39,8 @@ def init(number_of_requests, number_of_VNF_types):
 
     r_i = []
     for i in range(number_of_requests):
-        r_i.append(random.randint(lower_bound_of_r_i, upper_bound_of_r_i))
+        r = random.randint(lower_bound_of_r_i, upper_bound_of_r_i)
+        r_i.append(r * len(F_i[i]))
     print("r_i = ", r_i)
 
     s_i = []

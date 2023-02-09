@@ -1,7 +1,5 @@
-import numpy as np
 import random
 import networkx as nx
-import matplotlib.pyplot as plt
 
 def v2v_shortest_path_length(graph, v1, v2):
     shortest_path_length = nx.shortest_path_length(graph, v1, v2, "weight", method="dijkstra")
@@ -25,12 +23,13 @@ def check_is_last_vnf(f, arr):
         return 1
     return 0
 
-def init(number_of_requests, number_of_VNF_types, seed):
+def init(number_of_requests, number_of_VNF_types):
     global M, F, nodes, eta_f, cpu_f, max_iter_cro_mut
     global number_of_individual, number_of_gene_in_an_individual, elitism_rate, iteration_for_ga
     global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
     M = 1000000
+    seed = 238467
 
     lower_bound_of_eta_f = 1
     upper_bound_of_eta_f = 3

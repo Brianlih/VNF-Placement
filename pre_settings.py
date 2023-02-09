@@ -18,7 +18,7 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv):
     return Graph
 
 def init():
-    global G, nodes, cpu_v, mem_v, number_of_nodes
+    global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
     number_of_nodes = 4
 
@@ -27,7 +27,7 @@ def init():
     lower_bound_of_mem_v = 2
     upper_bound_of_mem_v = 4
     lower_bound_of_pi_wv = 2
-    upper_bound_of_pi_wv = 10
+    upper_bound_of_pi_wv = 3
 
     number_of_topo = 1
     # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)

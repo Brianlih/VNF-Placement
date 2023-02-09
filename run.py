@@ -31,7 +31,6 @@ if __name__ == "__main__":
 
     # Initialize the input data
     pre_settings.init()
-    seed = random.randint(0, 238467)
 
     for nr in range(len(number_of_requests)):
         # print("number of VNF types: ", number_of_VNF_types[0])
@@ -59,7 +58,7 @@ if __name__ == "__main__":
         mean_greedy_time_cost = 0
 
         # Initialize the input data
-        settings.init(number_of_requests[nr], number_of_VNF_types[0], seed)
+        settings.init(number_of_requests[nr], number_of_VNF_types[0])
 
         for iteration in range(number_of_iteration):
             # Initialize the input data for each iteration
