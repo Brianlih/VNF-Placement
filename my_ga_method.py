@@ -182,8 +182,7 @@ def main(data_from_cplex):
         population.extend(elitisms)
 
         # Crossover & Mutation
-        while len(population) < (
-            2 * data.number_of_individual
+        while len(population) <= (2 * data.number_of_individual
             + int(data.number_of_individual * data.elitism_rate)):
             tournament_set = random.sample(
                 sorted_population_index,
@@ -210,7 +209,7 @@ def main(data_from_cplex):
             nodes_p1_mem = []
             nodes_p2_mem = []
             it_cm = 1
-            while it_cm <= data.max_iter_cro_mut:
+            while it_cm <= data.max_repeat_time:
                 p1 = deepcopy(population[p1_index])
                 p2 = deepcopy(population[p2_index])
                 # Crossover
@@ -243,15 +242,18 @@ def main(data_from_cplex):
                 # Mutation
                 for i in range(len(p1)):
                     if p1[i] != -2 and p2[i] != -2:
-                        if (p1[i] in nodes_p1_cpu or
-                            p2[i] in nodes_p2_cpu or
-                            p1[i] in nodes_p1_mem or
-                            p2[i] in nodes_p2_mem):
+                        if p1[i] in nodes_p1_cpu or p1[i] in nodes_p1_mem:
                             while True:
                                 rn = random.randint(0, data.number_of_nodes - 1)
                                 if rn != p1[i]:
                                     p1[i] = rn
                                     break
+                            # Check constraints
+                            (nodes_p1_cpu,
+                            nodes_p2_cpu,
+                            nodes_p1_mem,
+                            nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
+                        if p2[i] in nodes_p2_cpu or p2[i] in nodes_p2_mem:
                             while True:
                                 rn = random.randint(0, data.number_of_nodes - 1)
                                 if rn != p2[i]:
@@ -297,9 +299,9 @@ def main(data_from_cplex):
                     break
                 else:
                     it_cm += 1
-            if it_cm > data.max_iter_cro_mut:
-                population.append(p1)
-                population.append(p2)
+            if it_cm > data.max_repeat_time:
+                population.append(population[p1_index])
+                population.append(population[p2_index])
 
         del population[0:data.number_of_individual]
         while len(population) > data.number_of_individual:
