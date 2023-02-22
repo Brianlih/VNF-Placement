@@ -182,5 +182,5 @@ def main(data_from_cplex):
         "total_profit": total_profit,
         "time_cost": time_cost
     }
-    print("acc_count: ", acc_count)
+    # print("acc_count: ", acc_count)
     return res

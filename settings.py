@@ -46,7 +46,7 @@ def init(number_of_requests, number_of_VNF_types):
     mutation_rate = 0.015
 
     F = [i for i in range(number_of_VNF_types)]
-    print("F = ", F)
+    # print("F = ", F)
 
     eta_f =[]
     s = seed
@@ -54,7 +54,7 @@ def init(number_of_requests, number_of_VNF_types):
         random.seed(s)
         eta_f.append(random.randint(lower_bound_of_eta_f, upper_bound_of_eta_f))
         s += 1
-    print("eta_f = ", eta_f)
+    # print("eta_f = ", eta_f)
 
     cpu_f = []
     s = seed
@@ -62,4 +62,4 @@ def init(number_of_requests, number_of_VNF_types):
         random.seed(s)
         cpu_f.append(random.randint(lower_bound_of_cpu_f, upper_bound_of_cpu_f))
         s += 1
-    print("cpu_f = ", cpu_f)
+    # print("cpu_f = ", cpu_f)
