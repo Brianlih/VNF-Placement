@@ -18,7 +18,7 @@ if __name__ == "__main__":
     number_of_requests = [15, 20, 25, 30, 35, 40, 45, 50, 55]
     number_of_VNF_types = [5]
     # number_of_VNF_types = [5, 10, 15, 20, 25, 30, 35, 40, 45]
-    number_of_iteration = 100
+    number_of_iteration = 1000
 
     result_mean_cplex_res_value = []
     result_mean_ga_res_value = []
