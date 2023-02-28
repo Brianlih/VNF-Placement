@@ -348,7 +348,7 @@ if __name__ == "__main__":
     plt.plot(x2, y2, '*-', color='y', label="Greedy",
              markersize=8, linewidth=2.5)
 
-    plt.xlabel('Number of requests')
+    plt.xlabel('Number of VNF types')
     plt.ylabel('Profit')
     plt.title('number_of_iteration=' + str(number_of_iteration))
     plt.legend()
