@@ -1,5 +1,6 @@
 from docplex.mp.model import Model
 import matplotlib.pyplot as plt
+import numpy as np
 import time
 import settings, pre_settings, settings_per_iteration
 import my_ga_method, my_random_method, my_greedy_method
@@ -325,31 +326,63 @@ if __name__ == "__main__":
     print("result_mean_random_time_cost: ", result_mean_random_time_cost)
     print("result_mean_greedy_time_cost: ", result_mean_greedy_time_cost)
 
-    # line 1 points
-    x1 = number_of_VNF_types
-    y1 = result_mean_cplex_res_value
-    plt.plot(x1, y1, 's-', color='r', label="CPLEX",
-             markersize=8, linewidth=2.5)
 
-    # line 2 points
-    x2 = number_of_VNF_types
-    y2 = result_mean_ga_res_value
-    plt.plot(x2, y2, 'o-', color='g', label="GA", markersize=8, linewidth=2.5)
+    # results = [result_mean_cplex_res_value, result_mean_ga_res_value, result_mean_greedy_res_value, result_mean_random_res_value]
+    colors = ['red', 'green', 'yellow', 'blue']
+    labels = ['CPLEX', 'GA', 'Greedy', 'Random']
 
-    # line 3 points
-    x2 = number_of_VNF_types
-    y2 = result_mean_random_res_value
-    plt.plot(x2, y2, 'D-', color='b', label="Random",
-             markersize=8, linewidth=2.5)
+    results = {
+        'result_mean_cplex_res_value': tuple(result_mean_cplex_res_value),
+        'result_mean_ga_res_value': tuple(result_mean_ga_res_value),
+        'result_mean_greedy_res_value': tuple(result_mean_greedy_res_value),
+        'result_mean_random_res_value': tuple(result_mean_random_res_value)
+    }
 
-    # line 4 points
-    x2 = number_of_VNF_types
-    y2 = result_mean_greedy_res_value
-    plt.plot(x2, y2, '*-', color='y', label="Greedy",
-             markersize=8, linewidth=2.5)
+    if len(number_of_VNF_types) > 1:
+        x = np.arange(len(number_of_VNF_types))  # the label locations
+        width = 0.25  # the width of the bars
+        multiplier = -0.5
+        l = 0
 
-    plt.xlabel('Number of VNF types')
-    plt.ylabel('Profit')
-    plt.title('number_of_iteration=' + str(number_of_iteration))
-    plt.legend()
-    plt.show()
+        fig, ax = plt.subplots(layout='constrained')
+
+        for method, result in results.items():
+            offset = width * multiplier
+            ax.bar(x + offset, result, width, color=colors[l], label=labels[l], align='center')
+            multiplier += 1
+            l += 1
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Profit')
+        ax.set_title('number_of_iteration=' + str(number_of_iteration))
+        ax.set_xticks(x + width, number_of_VNF_types)
+        ax.legend(loc='upper left', ncols=3)
+        ax.set_ylim(0, 300)
+
+        plt.show()
+    else:
+        # line 1 points
+        x1 = number_of_VNF_types
+        y1 = result_mean_cplex_res_value
+        plt.plot(x1, y1, 's-', color='r', label="CPLEX", markersize=8, linewidth=2.5)
+
+        # line 2 points
+        x2 = number_of_VNF_types
+        y2 = result_mean_ga_res_value
+        plt.plot(x2, y2, 'o-', color='g', label="GA", markersize=8, linewidth=2.5)
+
+        # line 3 points
+        x2 = number_of_VNF_types
+        y2 = result_mean_random_res_value
+        plt.plot(x2, y2, 'D-', color='b', label="Random", markersize=8, linewidth=2.5)
+
+        # line 4 points
+        x2 = number_of_VNF_types
+        y2 = result_mean_greedy_res_value
+        plt.plot(x2, y2, '*-', color='y', label="Greedy", markersize=8, linewidth=2.5)
+
+        plt.xlabel('Number of VNF types')
+        plt.ylabel('Profit')
+        plt.title('number_of_iteration=' + str(number_of_iteration))
+        plt.legend()
+        plt.show()
