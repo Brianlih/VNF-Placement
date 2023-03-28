@@ -101,8 +101,6 @@ def main(data_from_cplex):
         rest_cpu_v = deepcopy(data.cpu_v)
         rest_mem_v = deepcopy(data.mem_v)
         for i in assign_sequence:
-            all_paths = nx.all_simple_paths(data.G, source=data.s_i[i], target=data.e_i[i])
-            all_paths_list = list(all_paths)
             j = i * data.number_of_VNF_types
             start = j
             last = j + data.number_of_VNF_types - 1
@@ -114,14 +112,13 @@ def main(data_from_cplex):
 
             while True:
                 assigned_count = 0
-                path = all_paths_list[random.randint(0, len(all_paths_list) - 1)]
-                all_paths_list.remove(path)
                 while(j <= last):
                     vnf_type = j % data.number_of_VNF_types
                     if vnf_type not in data.F_i[i]:
                         chromosome[j] = -2
                     else:
-                        for node in path:
+                        nodes_list = random.sample(data.nodes, k=data.number_of_nodes)
+                        for node in nodes_list:
                             if vnf_type not in buffer_vnf_on_node[node]:
                                 if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
                                     buffer_vnf_on_node[node].append(vnf_type)
@@ -148,18 +145,14 @@ def main(data_from_cplex):
                     buffer_cpu = rest_cpu_v
                     buffer_mem = rest_mem_v
                     buffer_vnf_on_node = vnf_on_node
-                    if len(all_paths_list) > 0:
-                        chromosome[start:last + 1] = [-3] * (last + 1 - start)
-                        j = start
-                    else:
-                        # Request(F_i[i]) can not be placed on the network
-                        # completely so reject it
-                        j = start
-                        while j <= last:
-                            if chromosome[j] != -2:
-                                chromosome[j] = -1
-                            j += 1
-                        break
+                    # Request(F_i[i]) can not be placed on the network
+                    # completely so reject it
+                    j = start
+                    while j <= last:
+                        if chromosome[j] != -2:
+                            chromosome[j] = -1
+                        j += 1
+                    break
         population.append(chromosome)
 
     # Calculate the fitness value of each individual and
@@ -317,7 +310,7 @@ def main(data_from_cplex):
         )
 
         # Select the fittest individual as the optimal solution for the current generation
-        fittest.append(fitness_of_chromosomes[0])
+        fittest.append(fitness_of_chromosomes[sorted_population_index[0]])
         it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]

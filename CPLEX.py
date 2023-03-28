@@ -50,7 +50,7 @@ if __name__ == "__main__":
     M = 1000000
     number_of_VNF_types = 5
     number_of_requests = 15
-    number_of_nodes = 11
+    number_of_nodes = 60
 
     lower_bound_of_eta_f = 1
     upper_bound_of_eta_f = 3
@@ -71,8 +71,9 @@ if __name__ == "__main__":
 
     F = [i for i in range(number_of_VNF_types)]
     print("F = ", F)
-    number_of_topo = 1
-    G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
+    number_of_topo = 99
+    G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
+    # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
     # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt")
     # nx.draw_networkx(G)
     # plt.show()
@@ -155,7 +156,7 @@ if __name__ == "__main__":
     # Creating the model
     #------------------------------------------------------------------------------------------
 
-    VNF_placement_model = Model("VNF_placement")
+    VNF_placement_model = Model("VNF_placement", log_output=True)
 
     #------------------------------------------------------------------------------------------
     # Creating decsision variables

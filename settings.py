@@ -36,14 +36,14 @@ def init(number_of_requests, number_of_VNF_types):
     lower_bound_of_cpu_f = 2
     upper_bound_of_cpu_f = 5
 
-    number_of_individual = 50 # population size
+    number_of_individual = 100 # population size
     elitism_rate = 0.1
     iteration_for_ga = 10
     max_repeat_time = 15
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5
     crossover_rate = 0.5
-    mutation_rate = 0.015
+    mutation_rate = 0.0015
 
     F = [i for i in range(number_of_VNF_types)]
     # print("F = ", F)

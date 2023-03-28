@@ -15,10 +15,10 @@ def calculate_requests_needed_cpu():
     return request_needed_cpu
 
 if __name__ == "__main__":
-    number_of_requests = [15]
-    # number_of_requests = [15, 20, 25, 30, 35, 40, 45, 50, 55]
+    number_of_requests = [10]
+    # number_of_requests = [5, 10, 15, 20, 25, 30]
     # number_of_VNF_types = [5]
-    number_of_VNF_types = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+    number_of_VNF_types = [1, 2, 3, 4, 5, 6, 7]
     number_of_iteration = 50
 
     result_mean_cplex_res_value = []
