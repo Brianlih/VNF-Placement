@@ -1,7 +1,7 @@
 from docplex.mp.model import Model
 import matplotlib.pyplot as plt
 import numpy as np
-import time
+import time, datetime
 import settings, pre_settings, settings_per_iteration
 import my_ga_method, my_random_method, my_greedy_method
 
@@ -358,8 +358,9 @@ if __name__ == "__main__":
         ax.set_xticks(x + width, number_of_VNF_types)
         ax.legend(loc='upper left', ncols=3)
         ax.set_ylim(0, 300)
-
-        plt.show()
+        # plt.show()
+        current_date = datetime.datetime.now()
+        plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + ".png")
     else:
         # line 1 points
         x1 = number_of_VNF_types
@@ -385,4 +386,6 @@ if __name__ == "__main__":
         plt.ylabel('Profit')
         plt.title('number_of_iteration=' + str(number_of_iteration))
         plt.legend()
-        plt.show()
+        # plt.show()
+        current_date = datetime.datetime.now()
+        plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + ".png")
