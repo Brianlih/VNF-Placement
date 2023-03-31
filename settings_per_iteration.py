@@ -49,8 +49,8 @@ def init(number_of_requests, number_of_VNF_types):
     # print("s_i = ", s_i)
 
     e_i = []
-    buffer = random.randint(0, pre_settings.number_of_nodes - 1)
     for i in range(number_of_requests):
+        buffer = random.randint(0, pre_settings.number_of_nodes - 1)
         while(buffer == s_i[i]):
             buffer = random.randint(0, pre_settings.number_of_nodes - 1)
         e_i.append(buffer)

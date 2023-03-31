@@ -165,9 +165,9 @@ def main(data_from_cplex):
         reverse=True
     )
 
-    fittest = []
+    fittest = [-100]
     it = 1
-    while it <= data.iteration_for_ga:
+    while abs(data.cplex_res - max(fittest)) > 20:
         # Selection
         elitisms = []
         for i in range(int(data.number_of_individual * data.elitism_rate)):
@@ -315,7 +315,7 @@ def main(data_from_cplex):
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]
     # print("GA solution: ", solution)
-    fittest_value = fittest[-1]
+    fittest_value = max(fittest)
     end_time = time.time()
     time_cost = end_time - start_time
 

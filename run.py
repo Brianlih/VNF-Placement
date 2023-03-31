@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time, datetime
 import settings, pre_settings, settings_per_iteration
-import my_ga_method, my_random_method, my_greedy_method
+import my_ga_method, my_random_method, my_greedy_method, improved_greedy
 
 def calculate_requests_needed_cpu():
     request_needed_cpu = []
@@ -25,10 +25,12 @@ if __name__ == "__main__":
     result_mean_ga_res_value = []
     result_mean_random_res_value = []
     result_mean_greedy_res_value = []
+    result_mean_improved_greedy_res_value = []
     result_mean_cplex_time_cost = []
     result_mean_ga_time_cost = []
     result_mean_random_time_cost = []
     result_mean_greedy_time_cost = []
+    result_mean_improved_greedy_time_cost = []
 
     # Initialize the input data
     pre_settings.init()
@@ -42,21 +44,25 @@ if __name__ == "__main__":
         ga_res_value = []
         random_res_value = []
         greedy_res_value = []
+        improved_greedy_res_value = []
 
         cplex_time_cost = []
         ga_time_cost = []
         random_time_cost = []
         greedy_time_cost = []
+        improved_greedy_time_cost = []
 
         mean_cplex_res_value = 0
         mean_ga_res_value = 0
         mean_random_res_value = 0
         mean_greedy_res_value = 0
+        mean_improved_greedy_res_value = 0
 
         mean_cplex_time_cost = 0
         mean_ga_time_cost = 0
         mean_random_time_cost = 0
         mean_greedy_time_cost = 0
+        mean_improved_greedy_time_cost = 0
 
         # Initialize the input data
         settings.init(number_of_requests[0], number_of_VNF_types[nvt])
@@ -95,6 +101,7 @@ if __name__ == "__main__":
             # average_request_values.append(average_request_value)
 
             start_time = time.time()
+            print("CPLEX started!")
             # ------------------------------------------------------------------------------------------
             # Creating the model
             # ------------------------------------------------------------------------------------------
@@ -252,6 +259,8 @@ if __name__ == "__main__":
             end_time = time.time()
             cplex_time_cost.append(end_time - start_time)
 
+            print("CPLEX ended!")
+
             # define input data for GA method
             class Data:
                 number_of_VNF_types = number_of_VNF_types[nvt]
@@ -276,11 +285,19 @@ if __name__ == "__main__":
                 number_of_individual_chose_from_population_for_tournament = settings.number_of_individual_chose_from_population_for_tournament
                 crossover_rate = settings.crossover_rate
                 mutation_rate = settings.mutation_rate
+                cplex_res = cplex_res
 
             # call other methods
+            print("GA started!")
             ga_res = my_ga_method.main(Data)
+            print("GA ended!")
+            print("Random started!")
             random_res = my_random_method.main(Data)
+            print("Random ended!")
+            print("Greedy started!")
             greedy_res = my_greedy_method.main(Data)
+            print("Greedy started!")
+            # improved_greedy_res = improved_greedy.main(Data)
 
             # result
             ga_res_value.append(ga_res["fittest_value"])
@@ -289,51 +306,60 @@ if __name__ == "__main__":
             random_time_cost.append(random_res["time_cost"])
             greedy_res_value.append(greedy_res["total_profit"])
             greedy_time_cost.append(greedy_res["time_cost"])
+            # improved_greedy_res_value.append(improved_greedy_res["total_profit"])
+            # improved_greedy_time_cost.append(improved_greedy_res["time_cost"])
 
             mean_cplex_res_value += cplex_res
             mean_ga_res_value += ga_res["fittest_value"]
             mean_random_res_value += random_res["total_profit"]
             mean_greedy_res_value += greedy_res["total_profit"]
+            # mean_improved_greedy_res_value += improved_greedy_res["total_profit"]
             mean_cplex_time_cost += end_time - start_time
             mean_ga_time_cost += ga_res["time_cost"]
             mean_random_time_cost += random_res["time_cost"]
             mean_greedy_time_cost += greedy_res["time_cost"]
+            # mean_improved_greedy_time_cost += improved_greedy_res["time_cost"]
 
         mean_cplex_res_value /= number_of_iteration
         mean_ga_res_value /= number_of_iteration
         mean_random_res_value /= number_of_iteration
         mean_greedy_res_value /= number_of_iteration
+        # mean_improved_greedy_res_value /= number_of_iteration
         mean_cplex_time_cost /= number_of_iteration
         mean_ga_time_cost /= number_of_iteration
         mean_random_time_cost /= number_of_iteration
-        mean_greedy_time_cost /= number_of_iteration
+        # mean_improved_greedy_time_cost /= number_of_iteration
 
         result_mean_cplex_res_value.append(mean_cplex_res_value)
         result_mean_ga_res_value.append(mean_ga_res_value)
         result_mean_random_res_value.append(mean_random_res_value)
         result_mean_greedy_res_value.append(mean_greedy_res_value)
+        # result_mean_improved_greedy_res_value.append(mean_improved_greedy_res_value)
         result_mean_cplex_time_cost.append(mean_cplex_time_cost)
         result_mean_ga_time_cost.append(mean_ga_time_cost)
         result_mean_random_time_cost.append(mean_random_time_cost)
-        result_mean_greedy_time_cost.append(mean_greedy_time_cost)
+        # result_mean_improved_greedy_time_cost.append(mean_improved_greedy_time_cost)
 
     print("result_mean_cplex_res_value: ", result_mean_cplex_res_value)
     print("result_mean_ga_res_value:", result_mean_ga_res_value)
     print("result_mean_random_res_value:", result_mean_random_res_value)
     print("result_mean_greedy_res_value:", result_mean_greedy_res_value)
+    # print("result_mean_improved_greedy_res_value:", result_mean_improved_greedy_res_value)
     print("result_mean_cplex_time_cost: ", result_mean_cplex_time_cost)
     print("result_mean_ga_time_cost: ", result_mean_ga_time_cost)
     print("result_mean_random_time_cost: ", result_mean_random_time_cost)
     print("result_mean_greedy_time_cost: ", result_mean_greedy_time_cost)
+    # print("result_mean_improved_greedy_time_cost: ", result_mean_improved_greedy_time_cost)
 
 
     # results = [result_mean_cplex_res_value, result_mean_ga_res_value, result_mean_greedy_res_value, result_mean_random_res_value]
-    colors = ['red', 'green', 'yellow', 'blue']
+    colors = ['red', 'green''yellow', 'blue']
     labels = ['CPLEX', 'GA', 'Greedy', 'Random']
 
     results = {
         'result_mean_cplex_res_value': tuple(result_mean_cplex_res_value),
         'result_mean_ga_res_value': tuple(result_mean_ga_res_value),
+        # 'result_mean_improved_greedy_res_value': tuple(result_mean_improved_greedy_res_value),
         'result_mean_greedy_res_value': tuple(result_mean_greedy_res_value),
         'result_mean_random_res_value': tuple(result_mean_random_res_value)
     }
@@ -353,10 +379,11 @@ if __name__ == "__main__":
             l += 1
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Number of VNF types')
         ax.set_ylabel('Profit')
         ax.set_title('number_of_iteration=' + str(number_of_iteration))
         ax.set_xticks(x + width, number_of_VNF_types)
-        ax.legend(loc='upper left', ncols=3)
+        ax.legend(loc='upper left')
         ax.set_ylim(0, 300)
         # plt.show()
         current_date = datetime.datetime.now()
@@ -381,6 +408,11 @@ if __name__ == "__main__":
         x2 = number_of_VNF_types
         y2 = result_mean_greedy_res_value
         plt.plot(x2, y2, '*-', color='y', label="Greedy", markersize=8, linewidth=2.5)
+
+        # line 5 points
+        x2 = number_of_VNF_types
+        y2 = result_mean_improved_greedy_res_value
+        plt.plot(x2, y2, 'D-', color='black', label="Improved Greedy", markersize=8, linewidth=2.5)
 
         plt.xlabel('Number of VNF types')
         plt.ylabel('Profit')
