@@ -1,14 +1,12 @@
-import random
-import networkx as nx
-import settings
-import time
+import random, time
 from copy import deepcopy
+import settings
 
 def check_cap_after_cro_mut(p1, p2, data):
-    nodes_p1_cpu = []
-    nodes_p2_cpu = []
-    nodes_p1_mem = []
-    nodes_p2_mem = []
+    p1_overload_nodes = []
+    p2_overload_nodes = []
+    p1_available_nodes = []
+    p2_available_nodes = []
 
     # CPU constraint
     for i in data.nodes:
@@ -21,10 +19,14 @@ def check_cap_after_cro_mut(p1, p2, data):
             if p2[j] == i:
                 vnf_type = j % data.number_of_VNF_types
                 p2_cpu_count += data.cpu_f[vnf_type]
-        if p1_cpu_count > data.cpu_v[i]:
-            nodes_p1_cpu.append(i)
-        if p2_cpu_count > data.cpu_v[i]:
-            nodes_p2_cpu.append(i)
+        if p1_cpu_count > data.cpu_v[i] and i not in p1_overload_nodes:
+            p1_overload_nodes.append(i)
+        elif p1_cpu_count < data.cpu_v[i] and i not in p1_available_nodes:
+            p1_available_nodes.append(i)
+        if p2_cpu_count > data.cpu_v[i] and i not in p2_overload_nodes:
+            p2_overload_nodes.append(i)
+        elif p2_cpu_count < data.cpu_v[i] and i not in p2_available_nodes:
+            p2_available_nodes.append(i)
     
     # Memory constraint
     for i in data.nodes:
@@ -45,12 +47,16 @@ def check_cap_after_cro_mut(p1, p2, data):
         for j in range(len(p2_vnf_types)):
             if p2_vnf_types[j] == 1:
                 p2_mem_count += 1
-        if p1_mem_count > data.mem_v[i]:
-            nodes_p1_mem.append(i)
-        if p2_mem_count > data.mem_v[i]:
-            nodes_p2_mem.append(i)
+        if p1_mem_count > data.mem_v[i] and i not in p1_overload_nodes:
+            p1_overload_nodes.append(i)
+        elif p1_mem_count < data.mem_v[i] and i not in p1_available_nodes:
+            p1_available_nodes.append(i)
+        if p2_mem_count > data.mem_v[i] and i not in p2_overload_nodes:
+            p2_overload_nodes.append(i)
+        elif p2_mem_count < data.mem_v[i] and i not in p2_available_nodes:
+            p2_available_nodes.append(i)
         
-    return nodes_p1_cpu, nodes_p1_mem, nodes_p2_cpu, nodes_p2_mem
+    return p1_available_nodes, p2_available_nodes, p1_overload_nodes, p2_overload_nodes
 
 def check_if_meet_delay_requirement(request, i, data):
     tau_vnf_i = 0
@@ -100,107 +106,114 @@ def main(data_from_cplex):
         vnf_on_node = [[] for i in range(data.number_of_nodes)]
         rest_cpu_v = deepcopy(data.cpu_v)
         rest_mem_v = deepcopy(data.mem_v)
+        node_set = deepcopy(data.nodes)
         for i in assign_sequence:
             j = i * data.number_of_VNF_types
             start = j
             last = j + data.number_of_VNF_types - 1
-
             # resources befor placing F_i[i]
             buffer_cpu = deepcopy(rest_cpu_v)
             buffer_mem = deepcopy(rest_mem_v)
             buffer_vnf_on_node = deepcopy(vnf_on_node)
 
-            while True:
-                assigned_count = 0
-                while(j <= last):
-                    vnf_type = j % data.number_of_VNF_types
-                    if vnf_type not in data.F_i[i]:
-                        chromosome[j] = -2
-                    else:
-                        nodes_list = random.sample(data.nodes, k=data.number_of_nodes)
-                        for node in nodes_list:
-                            if vnf_type not in buffer_vnf_on_node[node]:
-                                if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
-                                    buffer_vnf_on_node[node].append(vnf_type)
-                                    buffer_mem[node] -= 1
-                                    chromosome[j] = node
-                                    buffer_cpu[node] -= data.cpu_f[vnf_type]
-                                    assigned_count += 1
-                                    break
-                            else:
-                                if data.cpu_f[vnf_type] <= buffer_cpu[node]:
-                                    chromosome[j] = node
-                                    buffer_cpu[node] -= data.cpu_f[vnf_type]
-                                    assigned_count += 1
-                                    break
-                    j += 1
-                if assigned_count == len(data.F_i[i]):
-                    # Update resource state
-                    rest_cpu_v = buffer_cpu
-                    rest_mem_v = buffer_mem
-                    vnf_on_node = buffer_vnf_on_node
-                    break
+            removed_node_list = []
+            assigned_count = 0
+            while(j <= last):
+                vnf_type = j % data.number_of_VNF_types
+                if vnf_type not in data.F_i[i]:
+                    chromosome[j] = -2
                 else:
-                    # Return to the state before placing F_i[i]
-                    buffer_cpu = rest_cpu_v
-                    buffer_mem = rest_mem_v
-                    buffer_vnf_on_node = vnf_on_node
-                    # Request(F_i[i]) can not be placed on the network
-                    # completely so reject it
-                    j = start
-                    while j <= last:
-                        if chromosome[j] != -2:
-                            chromosome[j] = -1
-                        j += 1
-                    break
+                    while(len(node_set) > 0):
+                        node = random.choice(node_set)
+                        if vnf_type not in buffer_vnf_on_node[node]:
+                            if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
+                                buffer_vnf_on_node[node].append(vnf_type)
+                                buffer_mem[node] -= 1
+                                chromosome[j] = node
+                                buffer_cpu[node] -= data.cpu_f[vnf_type]
+                                assigned_count += 1
+                                if buffer_mem[node] < 1 or buffer_cpu[node] < min(data.cpu_f):
+                                    node_set.remove(node)
+                                    removed_node_list.append(node)
+                                break
+                        else:
+                            if data.cpu_f[vnf_type] <= buffer_cpu[node]:
+                                chromosome[j] = node
+                                buffer_cpu[node] -= data.cpu_f[vnf_type]
+                                assigned_count += 1
+                                if buffer_mem[node] < 1 or buffer_cpu[node] < min(data.cpu_f):
+                                    node_set.remove(node)
+                                    removed_node_list.append(node)
+                                break
+                j += 1
+            if assigned_count == len(data.F_i[i]):
+                # Update resource state
+                rest_cpu_v = buffer_cpu
+                rest_mem_v = buffer_mem
+                vnf_on_node = buffer_vnf_on_node
+            else:
+                # Return to the state before placing F_i[i]
+                buffer_cpu = rest_cpu_v
+                buffer_mem = rest_mem_v
+                buffer_vnf_on_node = vnf_on_node
+                node_set.extend(removed_node_list)
+                # Request(F_i[i]) can not be placed on the network
+                # completely so reject it
+                j = start
+                while j <= last:
+                    if chromosome[j] != -2:
+                        chromosome[j] = -1
+                    j += 1
         population.append(chromosome)
 
     # Calculate the fitness value of each individual and
     # sort them in decreasing order
     fitness_of_chromosomes = calculate_fitness_value(population, data)
 
-    sorted_population_index = sorted(
-        range(len(fitness_of_chromosomes)),
-        key= lambda k: fitness_of_chromosomes[k],
+    sorted_population = sorted(
+        population,
+        key= lambda p: fitness_of_chromosomes[population.index(p)],
         reverse=True
     )
+    population = sorted_population
 
     fittest = [-100]
     it = 1
-    while abs(data.cplex_res - max(fittest)) > 20:
+    while abs(data.cplex_res - max(fittest)) > 10:
         # Selection
         elitisms = []
+        count = 0
         for i in range(int(data.number_of_individual * data.elitism_rate)):
-            elitisms.append(population[sorted_population_index[i]])
+            elitisms.append(population[i])
         population.extend(elitisms)
 
         # Crossover & Mutation
         while len(population) <= (2 * data.number_of_individual
             + int(data.number_of_individual * data.elitism_rate)):
             tournament_set = random.sample(
-                sorted_population_index,
+                population,
                 k=data.number_of_individual_chose_from_population_for_tournament
             )
 
             p1_index = data.number_of_individual
             for i in range(len(tournament_set)):
-                if sorted_population_index.index(tournament_set[i]) < p1_index:
-                    p1_index = sorted_population_index.index(tournament_set[i])
+                if population.index(tournament_set[i]) < p1_index:
+                    p1_index = population.index(tournament_set[i])
             
             tournament_set = random.sample(
-                sorted_population_index,
+                population,
                 k=data.number_of_individual_chose_from_population_for_tournament
             )
 
             p2_index = data.number_of_individual
             for i in range(len(tournament_set)):
-                if sorted_population_index.index(tournament_set[i]) < p2_index:
-                    p2_index = sorted_population_index.index(tournament_set[i])
+                if population.index(tournament_set[i]) < p2_index:
+                    p2_index = population.index(tournament_set[i])
 
-            nodes_p1_cpu = []
-            nodes_p2_cpu = []
-            nodes_p1_mem = []
-            nodes_p2_mem = []
+            p1_available_nodes = []
+            p2_available_nodes = []
+            p1_overload_nodes = []
+            p2_overload_nodes = []
             it_cm = 1
             while it_cm <= data.max_repeat_time:
                 p1 = deepcopy(population[p1_index])
@@ -208,18 +221,15 @@ def main(data_from_cplex):
                 # Crossover
                 for i in range(len(p1)):
                     if p1[i] != -2 and p2[i] != -2:
-                        if (p1[i] in nodes_p1_cpu or
-                            p2[i] in nodes_p2_cpu or
-                            p1[i] in nodes_p1_mem or
-                            p2[i] in nodes_p2_mem):
+                        if p1[i] in p1_overload_nodes or p2[i] in p2_overload_nodes:
                             buffer = p1[i]
                             p1[i] = p2[i]
                             p2[i] = buffer
                             # Check constraints
-                            (nodes_p1_cpu,
-                            nodes_p2_cpu,
-                            nodes_p1_mem,
-                            nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
+                            (p1_available_nodes,
+                            p2_available_nodes,
+                            p1_overload_nodes,
+                            p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
                         else:
                             cr = random.uniform(0, 1)
                             if cr > data.crossover_rate:
@@ -227,50 +237,82 @@ def main(data_from_cplex):
                                 p1[i] = p2[i]
                                 p2[i] = buffer
                                 # Check constraints
-                                (nodes_p1_cpu,
-                                nodes_p2_cpu,
-                                nodes_p1_mem,
-                                nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
+                                (p1_available_nodes,
+                                p2_available_nodes,
+                                p1_overload_nodes,
+                                p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
 
                 # Mutation
                 for i in range(len(p1)):
                     if p1[i] != -2 and p2[i] != -2:
-                        if p1[i] in nodes_p1_cpu or p1[i] in nodes_p1_mem:
+                        if p1[i] in p1_overload_nodes:
+                            selected_nodes = []
+                            flag = False
                             while True:
-                                rn = random.randint(0, data.number_of_nodes - 1)
-                                if rn != p1[i]:
-                                    p1[i] = rn
+                                for n in selected_nodes:
+                                    if n in p1_available_nodes:
+                                        p1_available_nodes.remove(n)
+                                if len(p1_available_nodes) > 0:
+                                    p1[i] = random.choice(p1_available_nodes)
+                                    selected_nodes.append(p1[i])
+                                else:
+                                    flag = True
+                                    while True:
+                                        rn = random.choice(data.nodes)
+                                        if rn != p1[i]:
+                                            p1[i] = rn
+                                            break
+                                # Check constraints
+                                (p1_available_nodes,
+                                p2_available_nodes,
+                                p1_overload_nodes,
+                                p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
+                                if flag:
                                     break
-                            # Check constraints
-                            (nodes_p1_cpu,
-                            nodes_p2_cpu,
-                            nodes_p1_mem,
-                            nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
-                        if p2[i] in nodes_p2_cpu or p2[i] in nodes_p2_mem:
-                            while True:
-                                rn = random.randint(0, data.number_of_nodes - 1)
-                                if rn != p2[i]:
-                                    p2[i] = rn
+                                elif p1[i] not in p1_overload_nodes:
                                     break
-                            # Check constraints
-                            (nodes_p1_cpu,
-                            nodes_p2_cpu,
-                            nodes_p1_mem,
-                            nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
                         else:
                             mutation_R_1 = random.uniform(0, 1)
-                            mutation_R_2 = random.uniform(0, 1)
                             if mutation_R_1 > data.mutation_rate:
                                 while True:
-                                    rn = random.randint(0, data.number_of_nodes - 1)
+                                    rn = random.choice(data.nodes)
                                     if rn != p1[i]:
                                         p1[i] = rn
                                         break
                                 # Check constraints
-                                (nodes_p1_cpu,
-                                nodes_p2_cpu,
-                                nodes_p1_mem,
-                                nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
+                                (p1_available_nodes,
+                                p2_available_nodes,
+                                p1_overload_nodes,
+                                p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
+
+                        if p2[i] in p2_overload_nodes:
+                            selected_nodes = []
+                            flag = False
+                            while True:
+                                for n in selected_nodes:
+                                    if n in p2_available_nodes:
+                                        p2_available_nodes.remove(n)
+                                if len(p2_available_nodes) > 0:
+                                    p2[i] = random.choice(p2_available_nodes)
+                                    selected_nodes.append(p2[i])
+                                else:
+                                    flag = True
+                                    while True:
+                                        rn = random.choice(data.nodes)
+                                        if rn != p2[i]:
+                                            p2[i] = rn
+                                            break
+                                # Check constraints
+                                (p1_available_nodes,
+                                p2_available_nodes,
+                                p1_overload_nodes,
+                                p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
+                                if flag:
+                                    break
+                                elif p2[i] not in p2_overload_nodes:
+                                    break
+                        else:
+                            mutation_R_2 = random.uniform(0, 1)
                             if mutation_R_2 > data.mutation_rate:
                                 while True:
                                     rn = random.randint(0, data.number_of_nodes - 1)
@@ -278,40 +320,47 @@ def main(data_from_cplex):
                                         p2[i] = rn
                                         break
                                 # Check constraints
-                                (nodes_p1_cpu,
-                                nodes_p2_cpu,
-                                nodes_p1_mem,
-                                nodes_p2_mem) = check_cap_after_cro_mut(p1, p2, data)
-
-                if (len(nodes_p1_cpu) == 0 and
-                    len(nodes_p2_cpu) == 0 and
-                    len(nodes_p1_mem) == 0 and
-                    len(nodes_p2_mem) == 0):
+                                (p1_available_nodes,
+                                p2_available_nodes,
+                                p1_overload_nodes,
+                                p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
+                flag = False
+                if len(p1_overload_nodes) == 0:
                     population.append(p1)
+                    flag = True
+                if len(p2_overload_nodes) == 0:
                     population.append(p2)
+                    flag = True
+                if flag:
+                    print("it_cm: ", it_cm)
                     break
-                else:
-                    it_cm += 1
+                it_cm += 1
             if it_cm > data.max_repeat_time:
+                count += 1
                 population.append(population[p1_index])
                 population.append(population[p2_index])
 
+        print("count: ", count)
         del population[0:data.number_of_individual]
-        while len(population) > data.number_of_individual:
-            population.pop()
 
         # Calculate the fitness value of each individual, and sort them in decresing order
         fitness_of_chromosomes = calculate_fitness_value(population, data)
-
-        sorted_population_index = sorted(
-            range(len(fitness_of_chromosomes)),
-            key= lambda k: fitness_of_chromosomes[k],
+        sorted_population = sorted(
+            population,
+            key= lambda p: fitness_of_chromosomes[population.index(p)],
             reverse=True
         )
+        while len(sorted_population) > data.number_of_individual:
+            sorted_population.pop()
+        population = sorted_population
+
+        fitness_of_chromosomes = calculate_fitness_value(population, data)
 
         # Select the fittest individual as the optimal solution for the current generation
-        fittest.append(fitness_of_chromosomes[sorted_population_index[0]])
-        it += 1
+        fittest.append(fitness_of_chromosomes[0])
+        print("CPLEX res: ", data.cplex_res)
+        print("fittest_value: ", fitness_of_chromosomes[0])
+        # it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]
     # print("GA solution: ", solution)
