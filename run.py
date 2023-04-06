@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # number_of_requests = [5, 10, 15, 20, 25, 30]
     # number_of_VNF_types = [5]
     number_of_VNF_types = [1, 2, 3, 4, 5, 6, 7]
-    number_of_iteration = 50
+    number_of_iteration = 1
 
     result_mean_cplex_res_value = []
     result_mean_ga_res_value = []
@@ -296,7 +296,7 @@ if __name__ == "__main__":
             print("Random ended!")
             print("Greedy started!")
             greedy_res = my_greedy_method.main(Data)
-            print("Greedy started!")
+            # print("Improved Greedy started!")
             # improved_greedy_res = improved_greedy.main(Data)
 
             # result

@@ -178,11 +178,13 @@ def main(data_from_cplex):
     population = sorted_population
 
     fittest = [-100]
+    current_fittest = -1
+    same_res_count = 0
     it = 1
-    while abs(data.cplex_res - max(fittest)) > 10:
+    while it <= 1000:
         # Selection
         elitisms = []
-        count = 0
+        # count = 0
         for i in range(int(data.number_of_individual * data.elitism_rate)):
             elitisms.append(population[i])
         population.extend(elitisms)
@@ -332,15 +334,15 @@ def main(data_from_cplex):
                     population.append(p2)
                     flag = True
                 if flag:
-                    print("it_cm: ", it_cm)
+                    # print("it_cm: ", it_cm)
                     break
                 it_cm += 1
             if it_cm > data.max_repeat_time:
-                count += 1
+                # count += 1
                 population.append(population[p1_index])
                 population.append(population[p2_index])
 
-        print("count: ", count)
+        # print("count: ", count)
         del population[0:data.number_of_individual]
 
         # Calculate the fitness value of each individual, and sort them in decresing order
@@ -358,9 +360,16 @@ def main(data_from_cplex):
 
         # Select the fittest individual as the optimal solution for the current generation
         fittest.append(fitness_of_chromosomes[0])
+        # if fitness_of_chromosomes[0] == current_fittest:
+        #     same_res_count += 1
+        # else:
+        #     same_res_count = 0
+        #     current_fittest = fitness_of_chromosomes[0]
+        # if same_res_count >= 100:
+        #     break
         print("CPLEX res: ", data.cplex_res)
         print("fittest_value: ", fitness_of_chromosomes[0])
-        # it += 1
+        it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]
     # print("GA solution: ", solution)
