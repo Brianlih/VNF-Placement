@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 import networkx as nx
 
 def v2v_shortest_path_length(graph, v1, v2):
@@ -29,7 +30,7 @@ def init(number_of_requests, number_of_VNF_types):
     global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
 
     M = 1000000
-    seed = 238467
+    seed = datetime.now().timestamp()
 
     lower_bound_of_eta_f = 1
     upper_bound_of_eta_f = 3
@@ -38,7 +39,7 @@ def init(number_of_requests, number_of_VNF_types):
 
     number_of_individual = 100 # population size
     elitism_rate = 0.1
-    iteration_for_ga = 1000
+    iteration_for_ga = 100
     max_repeat_time = 200
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5

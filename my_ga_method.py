@@ -181,7 +181,7 @@ def main(data_from_cplex):
     current_fittest = -1
     same_res_count = 0
     it = 1
-    while it <= settings.iteration_for_ga:
+    while True:
         count = 0
         # Selection
         # elitisms
@@ -232,7 +232,7 @@ def main(data_from_cplex):
                             p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
                         else:
                             cr = random.uniform(0, 1)
-                            if cr > data.crossover_rate:
+                            if cr < data.crossover_rate:
                                 buffer = p1[i]
                                 p1[i] = p2[i]
                                 p2[i] = buffer
@@ -273,7 +273,7 @@ def main(data_from_cplex):
                                     break
                         else:
                             mutation_R_1 = random.uniform(0, 1)
-                            if mutation_R_1 > data.mutation_rate:
+                            if mutation_R_1 < data.mutation_rate:
                                 while True:
                                     rn = random.choice(data.nodes)
                                     if rn != p1[i]:
@@ -313,7 +313,7 @@ def main(data_from_cplex):
                                     break
                         else:
                             mutation_R_2 = random.uniform(0, 1)
-                            if mutation_R_2 > data.mutation_rate:
+                            if mutation_R_2 < data.mutation_rate:
                                 while True:
                                     rn = random.randint(0, data.number_of_nodes - 1)
                                     if rn != p2[i]:
@@ -355,15 +355,16 @@ def main(data_from_cplex):
 
         # Select the fittest individual as the optimal solution for the current generation
         fittest.append(fitness_of_chromosomes[0])
-        # if fitness_of_chromosomes[0] == current_fittest:
-        #     same_res_count += 1
-        # else:
-        #     same_res_count = 0
-        #     current_fittest = fitness_of_chromosomes[0]
-        # if same_res_count >= 100:
-        #     break
+        if fitness_of_chromosomes[0] == current_fittest:
+            same_res_count += 1
+        else:
+            same_res_count = 0
+            current_fittest = fitness_of_chromosomes[0]
+        if same_res_count >= 50:
+            break
         print("CPLEX res: ", data.cplex_res)
         print("fittest_value: ", fitness_of_chromosomes[0])
+        print("it: ", it)
         it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]
