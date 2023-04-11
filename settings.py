@@ -38,7 +38,7 @@ def init(number_of_requests, number_of_VNF_types):
 
     number_of_individual = 100 # population size
     elitism_rate = 0.1
-    iteration_for_ga = 50
+    iteration_for_ga = 1000
     max_repeat_time = 200
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5

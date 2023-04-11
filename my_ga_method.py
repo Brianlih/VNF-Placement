@@ -181,19 +181,17 @@ def main(data_from_cplex):
     current_fittest = -1
     same_res_count = 0
     it = 1
-    while it <= 1000:
+    while it <= settings.iteration_for_ga:
+        count = 0
         # Selection
-        elitisms = []
-        # count = 0
+        # elitisms
         for i in range(int(data.number_of_individual * data.elitism_rate)):
-            elitisms.append(population[i])
-        population.extend(elitisms)
+            population.append(population[i])
 
         # Crossover & Mutation
-        while len(population) <= (2 * data.number_of_individual
-            + int(data.number_of_individual * data.elitism_rate)):
+        while len(population) < (2 * data.number_of_individual):
             tournament_set = random.sample(
-                population,
+                population[:settings.number_of_individual],
                 k=data.number_of_individual_chose_from_population_for_tournament
             )
 
@@ -203,7 +201,7 @@ def main(data_from_cplex):
                     p1_index = population.index(tournament_set[i])
             
             tournament_set = random.sample(
-                population,
+                population[:settings.number_of_individual],
                 k=data.number_of_individual_chose_from_population_for_tournament
             )
 
@@ -334,16 +332,15 @@ def main(data_from_cplex):
                     population.append(p2)
                     flag = True
                 if flag:
-                    # print("it_cm: ", it_cm)
                     break
                 it_cm += 1
             if it_cm > data.max_repeat_time:
-                # count += 1
+                count += 1
                 population.append(population[p1_index])
                 population.append(population[p2_index])
 
-        # print("count: ", count)
-        del population[0:data.number_of_individual]
+        print("count: ", count)
+        del population[:data.number_of_individual]
 
         # Calculate the fitness value of each individual, and sort them in decresing order
         fitness_of_chromosomes = calculate_fitness_value(population, data)
@@ -352,8 +349,6 @@ def main(data_from_cplex):
             key= lambda p: fitness_of_chromosomes[population.index(p)],
             reverse=True
         )
-        while len(sorted_population) > data.number_of_individual:
-            sorted_population.pop()
         population = sorted_population
 
         fitness_of_chromosomes = calculate_fitness_value(population, data)
