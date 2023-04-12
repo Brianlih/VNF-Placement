@@ -98,6 +98,7 @@ def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
 
 def main(data_from_cplex):
     data = data_from_cplex
+    if_considered_to_placed = [False for i in range(data.number_of_requests)]
     start_time = time.time()
 
     # Initialize decision variables
@@ -116,7 +117,11 @@ def main(data_from_cplex):
     sr_index = 0
     while sr_index < len(sorted_requests):
         request = sorted_requests[sr_index]
-        r_index = data.F_i.index(request)
+        for i in range(len(data.F_i)):
+            if request == data.F_i[i] and if_considered_to_placed[i] == False:
+                r_index = i
+                if_considered_to_placed[i] = True
+                break
 
         # Resources befor placing request
         buffer_cpu = deepcopy(rest_cpu_v)

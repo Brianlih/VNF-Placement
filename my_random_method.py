@@ -43,7 +43,10 @@ def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
 
 def main(data_from_cplex):
     data = data_from_cplex
+    if_considered_to_placed = [False for i in range(data.number_of_requests)]
     start_time = time.time()
+
+    # Initialize decision variables
     buffer_z = [0] * data.number_of_requests
     request_assign_node = [[] for i in range(data.number_of_requests)]
     for i in range(data.number_of_requests):
@@ -53,12 +56,16 @@ def main(data_from_cplex):
     vnf_on_node = [[] for i in range(data.number_of_nodes)]
     rest_cpu_v = deepcopy(data.cpu_v)
     rest_mem_v = deepcopy(data.mem_v)
-    buffer_F_i = deepcopy(data.F_i)
-    while len(buffer_F_i) > 0:
-        # randomly select a request
-        request = random.choice(buffer_F_i)
-        buffer_F_i.remove(request)
-        r_index = data.F_i.index(request)
+    random_request_sequence = random.sample(data.F_i, k=len(data.F_i))
+
+    rrs_index = 0
+    while rrs_index < data.number_of_requests:
+        request = random_request_sequence[rrs_index]
+        for i in range(len(data.F_i)):
+            if request == data.F_i[i] and if_considered_to_placed[i] == False:
+                r_index = i
+                if_considered_to_placed[i] = True
+                break
 
         # resources befor placing request
         buffer_cpu = deepcopy(rest_cpu_v)
@@ -103,6 +110,7 @@ def main(data_from_cplex):
                 buffer_mem = rest_mem_v
                 buffer_vnf_on_node = vnf_on_node
                 buffer_request_assign_node = request_assign_node
+        rrs_index += 1
 
     # print("Random solution: ", request_assign_node)
     end_time = time.time()
