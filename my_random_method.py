@@ -41,33 +41,6 @@ def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
         two_phases_len.append(length)
     return two_phases_len
 
-def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
-    node_value = []
-    is_first_vnf = settings.check_is_first_vnf(vnf_type, data.F_i[r_index])
-    if is_first_vnf:
-        pre_node = data.s_i[r_index]
-    else:
-        pre_vnf_index = data.F_i[r_index].index(vnf_type) - 1
-        pre_vnf = data.F_i[r_index][pre_vnf_index]
-        pre_node = buffer_request_assign_node[r_index][pre_vnf]
-    two_phases_len = calculate_two_phase_length_of_nodes(pre_node, r_index, data)
-    max_tpl = max(two_phases_len)
-    min_tpl = min(two_phases_len)
-    max_rc = max(rest_cpu_v)
-    min_rc = min(rest_cpu_v)
-    for i in range(len(data.nodes)):
-        node_value.append(
-            ((rest_cpu_v[i] - min_rc + 1)
-            / (max_rc - min_rc + 1))
-            / ((two_phases_len[i] - min_tpl + 1)
-                / (max_tpl - min_tpl + 1)))
-    sorted_nodes = sorted(
-        data.nodes,
-        key= lambda node : node_value[node],
-        reverse=True)
-    
-    return sorted_nodes
-
 def main(data_from_cplex):
     data = data_from_cplex
     start_time = time.time()
@@ -92,26 +65,23 @@ def main(data_from_cplex):
         buffer_mem = deepcopy(rest_mem_v)
         buffer_vnf_on_node = deepcopy(vnf_on_node)
         buffer_request_assign_node = deepcopy(request_assign_node)
-        assigned_count = 0
         flag = False
+        node_sequence = random.sample(data.nodes, k=data.number_of_nodes)
         for vnf_type in request:
-            sorted_nodes = sort_nodes(buffer_cpu, r_index, vnf_type, buffer_request_assign_node, data)
-            for node in sorted_nodes:
+            for node in node_sequence:
                 if vnf_type not in buffer_vnf_on_node[node]:
                     if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
                         buffer_vnf_on_node[node].append(vnf_type)
                         buffer_mem[node] -= 1
                         buffer_request_assign_node[r_index][vnf_type] = node
                         buffer_cpu[node] -= data.cpu_f[vnf_type]
-                        assigned_count += 1
                         break
                 elif data.cpu_f[vnf_type] <= buffer_cpu[node]:
                     if data.cpu_f[vnf_type] <= buffer_cpu[node]:
                         buffer_request_assign_node[r_index][vnf_type] = node
                         buffer_cpu[node] -= data.cpu_f[vnf_type]
-                        assigned_count += 1
                         break
-                if node == sorted_nodes[-1]:
+                if node == node_sequence[-1]:
                     flag = True
             if flag:
                 # Return to the state before placing request

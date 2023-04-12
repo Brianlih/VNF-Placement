@@ -47,30 +47,26 @@ def sort_requests(request_needed_cpu, data):
     request_value = []
     max_c = max(request_needed_cpu)
     min_c = min(request_needed_cpu)
+    max_p = max(data.profit_i)
+    min_p = min(data.profit_i)
     for i in range(len(data.F_i)):
-        max_p = max(data.profit_i)
-        min_p = min(data.profit_i)
         request_value.append(((data.profit_i[i] - min_p + 1) / (max_p - min_p + 1))
-            / ((request_needed_cpu[i] - min_c + 1) / (max_c - min_c + 1)))
+            / ((request_needed_cpu[i] - min_c + 1) / (max_c - min_c + 1))
+        )
             
     sorted_requests = sorted(
         data.F_i,
         key= lambda request : request_value[data.F_i.index(request)],
-        reverse=True)
+        reverse=True
+    )
     
     return sorted_requests
 
 def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
     two_phases_len = []
     for i in range(len(data.nodes)):
-        length = settings.v2v_shortest_path_length(
-                data.G,
-                pre_node,
-                i)
-        length += settings.v2v_shortest_path_length(
-                data.G,
-                i,
-                data.e_i[r_index])
+        length = settings.v2v_shortest_path_length(data.G, pre_node, i)
+        length += settings.v2v_shortest_path_length(data.G, i, data.e_i[r_index])
         two_phases_len.append(length)
     return two_phases_len
 
@@ -90,10 +86,9 @@ def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
     min_rc = min(rest_cpu_v)
     for i in range(len(data.nodes)):
         node_value.append(
-            ((rest_cpu_v[i] - min_rc + 1)
-            / (max_rc - min_rc + 1))
-            / ((two_phases_len[i] - min_tpl + 1)
-                / (max_tpl - min_tpl + 1)))
+            ((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1))
+            / ((two_phases_len[i] - min_tpl + 1)/ (max_tpl - min_tpl + 1))
+        )
     sorted_nodes = sorted(
         data.nodes,
         key= lambda node : node_value[node],

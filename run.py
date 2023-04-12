@@ -18,7 +18,7 @@ if __name__ == "__main__":
     number_of_requests = [10]
     # number_of_requests = [5, 10, 15, 20, 25, 30]
     # number_of_VNF_types = [5]
-    number_of_VNF_types = [1, 2, 3, 4, 5, 6, 7]
+    number_of_VNF_types = [3, 4, 5, 6, 7, 8, 9]
     number_of_iteration = 1
 
     result_mean_cplex_res_value = []
@@ -311,7 +311,7 @@ if __name__ == "__main__":
         ax.set_title('number_of_iteration=' + str(number_of_iteration))
         ax.set_xticks(x + width, number_of_VNF_types)
         ax.legend(loc='upper left')
-        ax.set_ylim(0, 300)
+        ax.set_ylim(0, 800)
         # plt.show()
         current_date = datetime.datetime.now()
         plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + ".png")
@@ -336,10 +336,10 @@ if __name__ == "__main__":
         y2 = result_mean_greedy_res_value
         plt.plot(x2, y2, '*-', color='y', label="Greedy", markersize=8, linewidth=2.5)
 
-        # line 5 points
-        x2 = number_of_VNF_types
-        y2 = result_mean_improved_greedy_res_value
-        plt.plot(x2, y2, 'D-', color='black', label="Improved Greedy", markersize=8, linewidth=2.5)
+        # # line 5 points
+        # x2 = number_of_VNF_types
+        # y2 = result_mean_improved_greedy_res_value
+        # plt.plot(x2, y2, 'D-', color='black', label="Improved Greedy", markersize=8, linewidth=2.5)
 
         plt.xlabel('Number of VNF types')
         plt.ylabel('Profit')
