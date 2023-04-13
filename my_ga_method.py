@@ -339,7 +339,7 @@ def main(data_from_cplex):
                 population.append(population[p1_index])
                 population.append(population[p2_index])
 
-        print("count: ", count)
+        # print("count: ", count)
         del population[:data.number_of_individual]
 
         # Calculate the fitness value of each individual, and sort them in decresing order
@@ -362,9 +362,9 @@ def main(data_from_cplex):
             current_fittest = fitness_of_chromosomes[0]
         if same_res_count >= 50:
             break
-        print("CPLEX res: ", data.cplex_res)
-        print("fittest_value: ", fitness_of_chromosomes[0])
-        print("it: ", it)
+        # print("CPLEX res: ", data.cplex_res)
+        # print("fittest_value: ", fitness_of_chromosomes[0])
+        # print("it: ", it)
         it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]

@@ -18,7 +18,7 @@ if __name__ == "__main__":
     number_of_requests = [10]
     # number_of_requests = [5, 10, 15, 20, 25, 30]
     # number_of_VNF_types = [5]
-    number_of_VNF_types = [3, 4, 5, 6, 7, 8, 9]
+    number_of_VNF_types = [1, 2, 3, 4, 5, 6]
     number_of_iteration = 1
 
     result_mean_cplex_res_value = []
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             print("CPLEX started!")
 
             # Creating the model
-            VNF_placement_model = Model("VNF_placement")
+            VNF_placement_model = Model("VNF_placement", log_output=True)
 
             # Creating decsision variables
             z = VNF_placement_model.binary_var_dict(
@@ -278,6 +278,13 @@ if __name__ == "__main__":
     print("result_mean_greedy_time_cost: ", result_mean_greedy_time_cost)
     # print("result_mean_improved_greedy_time_cost: ", result_mean_improved_greedy_time_cost)
 
+    results = [result_mean_cplex_res_value, result_mean_ga_res_value, result_mean_greedy_res_value, result_mean_random_res_value]
+    ylim = 0
+    for i in range(len(results)):
+        for j in range(len(results[i])):
+            if results[i][j] > ylim:
+                ylim = results[i][j]
+
 
     # results = [result_mean_cplex_res_value, result_mean_ga_res_value, result_mean_greedy_res_value, result_mean_random_res_value]
     colors = ['red', 'green', 'yellow', 'blue']
@@ -311,7 +318,7 @@ if __name__ == "__main__":
         ax.set_title('number_of_iteration=' + str(number_of_iteration))
         ax.set_xticks(x + width, number_of_VNF_types)
         ax.legend(loc='upper left')
-        ax.set_ylim(0, 800)
+        ax.set_ylim(0, int(ylim)+ 50)
         # plt.show()
         current_date = datetime.datetime.now()
         plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + ".png")
