@@ -20,7 +20,7 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv):
 def init():
     global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
-    number_of_nodes = 60
+    number_of_nodes = 30
 
     lower_bound_of_cpu_v = 15
     upper_bound_of_cpu_v = 20
@@ -29,8 +29,9 @@ def init():
     lower_bound_of_pi_wv = 2
     upper_bound_of_pi_wv = 3
 
-    number_of_topo = 50
-    G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
+    number_of_topo = 95
+    G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
+    # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
     # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
     # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
     # nx.draw_networkx(G)
