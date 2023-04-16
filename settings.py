@@ -34,8 +34,8 @@ def init(number_of_requests, number_of_VNF_types):
 
     lower_bound_of_eta_f = 1
     upper_bound_of_eta_f = 3
-    lower_bound_of_cpu_f = 2
-    upper_bound_of_cpu_f = 5
+    lower_bound_of_cpu_f = 100
+    upper_bound_of_cpu_f = 2700
 
     number_of_individual = 100 # population size
     elitism_rate = 0.1

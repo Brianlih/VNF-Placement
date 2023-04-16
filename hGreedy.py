@@ -1,5 +1,6 @@
 import time
 from copy import deepcopy
+import networkx as nx
 import settings
 
 def check_if_meet_delay_requirement(request_assign_node, i, data):
@@ -34,67 +35,14 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
         return True
     return False
 
-def calculate_requests_needed_cpu(data):
-    request_needed_cpu = []
-    for i in range(len(data.F_i)):
-        cpu_count = 0
-        for j in range(len(data.F_i[i])):
-            cpu_count += data.cpu_f[data.F_i[i][j]]
-        request_needed_cpu.append(cpu_count)
-    return request_needed_cpu
-
-def sort_requests(request_needed_cpu, data):
-    request_value = []
-    max_c = max(request_needed_cpu)
-    min_c = min(request_needed_cpu)
-    max_p = max(data.profit_i)
-    min_p = min(data.profit_i)
-    for i in range(len(data.F_i)):
-        request_value.append(((data.profit_i[i] - min_p + 1) / (max_p - min_p + 1))
-            / ((request_needed_cpu[i] - min_c + 1) / (max_c - min_c + 1))
-        )
-            
-    sorted_requests = sorted(
-        data.F_i,
-        key= lambda request : request_value[data.F_i.index(request)],
-        reverse=True
-    )
+def sort_candidates(candidates, pre_node, graph):
+    distance_to_prenode = []
     
-    return sorted_requests
+    for node in candidates:
+        distance_to_prenode.append(settings.v2v_shortest_path_length(graph, pre_node, node))
 
-def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
-    two_phases_len = []
-    for i in range(len(data.nodes)):
-        length = settings.v2v_shortest_path_length(data.G, pre_node, i)
-        length += settings.v2v_shortest_path_length(data.G, i, data.e_i[r_index])
-        two_phases_len.append(length)
-    return two_phases_len
-
-def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
-    node_value = []
-    is_first_vnf = settings.check_is_first_vnf(vnf_type, data.F_i[r_index])
-    if is_first_vnf:
-        pre_node = data.s_i[r_index]
-    else:
-        pre_vnf_index = data.F_i[r_index].index(vnf_type) - 1
-        pre_vnf = data.F_i[r_index][pre_vnf_index]
-        pre_node = buffer_request_assign_node[r_index][pre_vnf]
-    two_phases_len = calculate_two_phase_length_of_nodes(pre_node, r_index, data)
-    max_tpl = max(two_phases_len)
-    min_tpl = min(two_phases_len)
-    max_rc = max(rest_cpu_v)
-    min_rc = min(rest_cpu_v)
-    for i in range(len(data.nodes)):
-        node_value.append(
-            ((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1))
-            / ((two_phases_len[i] - min_tpl + 1)/ (max_tpl - min_tpl + 1))
-        )
-    sorted_nodes = sorted(
-        data.nodes,
-        key= lambda node : node_value[node],
-        reverse=True)
-    
-    return sorted_nodes
+    sorted_candidates = sorted(candidates, key= lambda node : distance_to_prenode[candidates.index(node)])
+    return sorted_candidates
 
 def main(data_from_cplex):
     data = data_from_cplex
@@ -109,12 +57,16 @@ def main(data_from_cplex):
         for j in range(data.number_of_VNF_types):
             request_assign_node[i].append(-2)
     
-    request_needed_cpu = calculate_requests_needed_cpu(data)
-    sorted_requests = sort_requests(request_needed_cpu, data)
-    
+    sorted_requests = sorted(
+        data.F_i,
+        key= lambda request : len(request),
+        reverse=True
+    )
+
     rest_cpu_v = deepcopy(data.cpu_v)
     rest_mem_v = deepcopy(data.mem_v)
     r_index = -1
+    pre_node = -1
     sr_index = 0
     while sr_index < len(sorted_requests):
         request = sorted_requests[sr_index]
@@ -129,33 +81,48 @@ def main(data_from_cplex):
         buffer_mem = deepcopy(rest_mem_v)
         buffer_vnf_on_node = deepcopy(vnf_on_node)
         buffer_request_assign_node = deepcopy(request_assign_node)
-
-        # Greedy
-        flag = False
+        
         for vnf_type in request:
-            sorted_nodes = sort_nodes(buffer_cpu, r_index, vnf_type, buffer_request_assign_node, data)
-            for node in sorted_nodes:
-                if vnf_type not in buffer_vnf_on_node[node]:
+            mapped = False
+            candidates = []
+            if request.index(vnf_type) == 0:
+                pre_node = data.s_i[r_index]
+            else:
+                pre_node = buffer_request_assign_node[r_index][request[request.index(vnf_type) - 1]]
+            
+            for i in range(len(buffer_vnf_on_node)):
+                if vnf_type in buffer_vnf_on_node[i]:
+                    candidates.append(i)
+            
+            sorted_cnadidates = sort_candidates(candidates, pre_node, data.G)
+            for node in sorted_cnadidates:
+                if data.cpu_f[vnf_type] <= buffer_cpu[node]:
+                    buffer_request_assign_node[r_index][vnf_type] = node
+                    buffer_cpu[node] -= data.cpu_f[vnf_type]
+                    pre_node = node
+                    mapped = True
+                    break
+            if mapped == False:
+                edges = list(nx.bfs_edges(data.G, pre_node))
+                nodes = [pre_node] + [v for u, v in edges]
+                nodes_for_new_vnf = [node for node in nodes if node not in sorted_cnadidates]
+                for node in nodes_for_new_vnf:
                     if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
                         buffer_vnf_on_node[node].append(vnf_type)
                         buffer_mem[node] -= 1
                         buffer_request_assign_node[r_index][vnf_type] = node
                         buffer_cpu[node] -= data.cpu_f[vnf_type]
+                        pre_node = node
+                        mapped = True
                         break
-                elif data.cpu_f[vnf_type] <= buffer_cpu[node]:
-                    buffer_request_assign_node[r_index][vnf_type] = node
-                    buffer_cpu[node] -= data.cpu_f[vnf_type]
-                    break
-                if node == sorted_nodes[-1]:
-                    flag = True
-            if flag:
+            if mapped == False:
                 # Return to the state before placing request
                 buffer_cpu = rest_cpu_v
                 buffer_mem = rest_mem_v
                 buffer_vnf_on_node = vnf_on_node
                 buffer_request_assign_node = request_assign_node
                 break
-        if not flag:
+        if mapped == True:
             if check_if_meet_delay_requirement(buffer_request_assign_node, r_index, data):
                 rest_cpu_v = buffer_cpu
                 rest_mem_v = buffer_mem
@@ -170,7 +137,6 @@ def main(data_from_cplex):
                 buffer_request_assign_node = request_assign_node
         sr_index += 1
 
-    # print("greedy solution: ", request_assign_node)
     end_time = time.time()
     time_cost = end_time - start_time
     total_profit = 0
@@ -185,3 +151,4 @@ def main(data_from_cplex):
     }
     # print("acc_count: ", acc_count)
     return res
+                    

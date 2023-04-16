@@ -22,8 +22,8 @@ def init():
 
     number_of_nodes = 30
 
-    lower_bound_of_cpu_v = 15
-    upper_bound_of_cpu_v = 20
+    lower_bound_of_cpu_v = 3720
+    upper_bound_of_cpu_v = 5320
     lower_bound_of_mem_v = 2
     upper_bound_of_mem_v = 4
     lower_bound_of_pi_wv = 2
