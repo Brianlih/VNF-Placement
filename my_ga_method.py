@@ -368,7 +368,7 @@ def main(data_from_cplex):
         else:
             same_res_count = 0
             current_fittest = fitness_of_chromosomes[0]
-        if same_res_count >= 50:
+        if same_res_count >= 150:
             break
         print("CPLEX res: ", data.cplex_res)
         print("fittest_value: ", fitness_of_chromosomes[0])
