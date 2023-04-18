@@ -93,6 +93,23 @@ def calculate_fitness_value(population, data):
             j += data.number_of_VNF_types
     return fitness_of_chromosomes
 
+def adjust_occ(p, data):
+    start = -1
+    last = -1
+    i = 0
+    while i < len(p):
+        if p[i] == -1:
+            start = (i // data.number_of_requests) * data.number_of_VNF_types
+            last = start + data.number_of_VNF_types - 1
+            j = start
+            while j <= last:
+                if p[j] != -2 and p[j] != -1:
+                    p[j] = -1
+                j += 1
+            i = last
+        i += 1
+    return p
+
 def main(data_from_cplex):
     data = data_from_cplex
     start_time = time.time()
@@ -233,6 +250,9 @@ def main(data_from_cplex):
                             buffer = p1[i]
                             p1[i] = p2[i]
                             p2[i] = buffer
+                            # Check occupied situation
+                            p1 = adjust_occ(p1, data)
+                            p2 = adjust_occ(p2, data)
                             # Check constraints
                             (p1_available_nodes,
                             p2_available_nodes,
@@ -244,6 +264,9 @@ def main(data_from_cplex):
                                 buffer = p1[i]
                                 p1[i] = p2[i]
                                 p2[i] = buffer
+                                # Check occupied situation
+                                p1 = adjust_occ(p1, data)
+                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -270,6 +293,9 @@ def main(data_from_cplex):
                                         if rn != p1[i]:
                                             p1[i] = rn
                                             break
+                                # Check occupied situation
+                                p1 = adjust_occ(p1, data)
+                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -287,6 +313,9 @@ def main(data_from_cplex):
                                     if rn != p1[i]:
                                         p1[i] = rn
                                         break
+                                # Check occupied situation
+                                p1 = adjust_occ(p1, data)
+                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -310,6 +339,9 @@ def main(data_from_cplex):
                                         if rn != p2[i]:
                                             p2[i] = rn
                                             break
+                                # Check occupied situation
+                                p1 = adjust_occ(p1, data)
+                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -327,6 +359,9 @@ def main(data_from_cplex):
                                     if rn != p2[i]:
                                         p2[i] = rn
                                         break
+                                # Check occupied situation
+                                p1 = adjust_occ(p1, data)
+                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -368,7 +403,7 @@ def main(data_from_cplex):
         else:
             same_res_count = 0
             current_fittest = fitness_of_chromosomes[0]
-        if same_res_count >= 150:
+        if same_res_count >= 50:
             break
         print("CPLEX res: ", data.cplex_res)
         print("fittest_value: ", fitness_of_chromosomes[0])

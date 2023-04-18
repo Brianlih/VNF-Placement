@@ -44,7 +44,7 @@ def init(number_of_requests, number_of_VNF_types):
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5
     crossover_rate = 0.5
-    mutation_rate = 0.001
+    mutation_rate = 0.01
 
     F = [i for i in range(number_of_VNF_types)]
     # print("F = ", F)
