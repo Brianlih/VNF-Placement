@@ -72,10 +72,8 @@ def check_if_meet_delay_requirement(request, i, data):
             if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
                 last_vnf = vnf_1
     tau_i += tau_vnf_i
-    if request[first_vnf] != data.s_i[i]:
-        tau_i += settings.v2v_shortest_path_length(data.G, data.s_i[i], request[first_vnf])
-    if request[last_vnf] != data.e_i[i]:
-        tau_i += settings.v2v_shortest_path_length(data.G, data.e_i[i], request[last_vnf])
+    tau_i += settings.v2v_shortest_path_length(data.G, data.s_i[i], request[first_vnf])
+    tau_i += settings.v2v_shortest_path_length(data.G, data.e_i[i], request[last_vnf])
         
     if tau_i <= data.r_i[i]:
         return True
@@ -117,6 +115,8 @@ def main(data_from_cplex):
     # Initialize population randomly
     population = []
     request_list = [r for r in range(data.number_of_requests)]
+    sFlag = False
+    eFlag = False
     for p in range(data.number_of_individual):
         chromosome = [-3] * data.number_of_gene_in_an_individual
         assign_sequence = random.sample(request_list, k=data.number_of_requests)
@@ -132,6 +132,13 @@ def main(data_from_cplex):
             buffer_cpu = deepcopy(rest_cpu_v)
             buffer_mem = deepcopy(rest_mem_v)
             buffer_vnf_on_node = deepcopy(vnf_on_node)
+
+            if data.s_i[i] in node_set:
+                node_set.remove(data.s_i[i])
+                sFlag = True
+            if data.e_i[i] in node_set:
+                node_set.remove(data.e_i[i])
+                eFlag = True
 
             removed_node_list = []
             assigned_count = 0
@@ -171,6 +178,12 @@ def main(data_from_cplex):
                                 node_set.remove(node)
                     node_set.extend(choiced_nodes)
                 j += 1
+            if sFlag:
+                node_set.append(data.s_i[i])
+                sFlag = False
+            if eFlag:
+                node_set.append(data.e_i[i])
+                eFlag = False
             if assigned_count == len(data.F_i[i]):
                 # Update resource state
                 rest_cpu_v = buffer_cpu
@@ -276,7 +289,12 @@ def main(data_from_cplex):
                 # Mutation
                 for i in range(len(p1)):
                     if p1[i] != -2 and p2[i] != -2:
+                        r_index = i // data.number_of_VNF_types
                         if p1[i] in p1_overload_nodes:
+                            if data.s_i[r_index] in p1_available_nodes:
+                                p1_available_nodes.remove(data.s_i[r_index])
+                            if data.e_i[r_index] in p1_available_nodes:
+                                p1_available_nodes.remove(data.e_i[r_index])
                             selected_nodes = []
                             flag = False
                             while True:
@@ -289,8 +307,8 @@ def main(data_from_cplex):
                                 else:
                                     flag = True
                                     while True:
-                                        rn = random.choice(data.nodes)
-                                        if rn != p1[i]:
+                                        rn = random.randint(-1, data.number_of_nodes - 1)
+                                        if rn != p1[i] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
                                             p1[i] = rn
                                             break
                                 # Check occupied situation
@@ -309,8 +327,8 @@ def main(data_from_cplex):
                             mutation_R_1 = random.uniform(0, 1)
                             if mutation_R_1 < data.mutation_rate:
                                 while True:
-                                    rn = random.choice(data.nodes)
-                                    if rn != p1[i]:
+                                    rn = random.randint(-1, data.number_of_nodes - 1)
+                                    if rn != p1[i] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
                                         p1[i] = rn
                                         break
                                 # Check occupied situation
@@ -323,6 +341,10 @@ def main(data_from_cplex):
                                 p2_overload_nodes) = check_cap_after_cro_mut(p1, p2, data)
 
                         if p2[i] in p2_overload_nodes:
+                            if data.s_i[r_index] in p2_available_nodes:
+                                p2_available_nodes.remove(data.s_i[r_index])
+                            if data.e_i[r_index] in p2_available_nodes:
+                                p2_available_nodes.remove(data.e_i[r_index])
                             selected_nodes = []
                             flag = False
                             while True:
@@ -335,8 +357,8 @@ def main(data_from_cplex):
                                 else:
                                     flag = True
                                     while True:
-                                        rn = random.choice(data.nodes)
-                                        if rn != p2[i]:
+                                        rn = random.randint(-1, data.number_of_nodes - 1)
+                                        if rn != p2[i] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
                                             p2[i] = rn
                                             break
                                 # Check occupied situation
@@ -355,8 +377,8 @@ def main(data_from_cplex):
                             mutation_R_2 = random.uniform(0, 1)
                             if mutation_R_2 < data.mutation_rate:
                                 while True:
-                                    rn = random.randint(0, data.number_of_nodes - 1)
-                                    if rn != p2[i]:
+                                    rn = random.randint(-1, data.number_of_nodes - 1)
+                                    if rn != p2[i] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
                                         p2[i] = rn
                                         break
                                 # Check occupied situation

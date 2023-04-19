@@ -19,16 +19,16 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
             if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
                 last_vnf = vnf_1
     tau_i += tau_vnf_i
-    if request_assign_node[i][first_vnf] != data.s_i[i]:
-        tau_i += settings.v2v_shortest_path_length(
-            data.G,
-            data.s_i[i],
-            request_assign_node[i][first_vnf])
-    if request_assign_node[i][last_vnf] != data.e_i[i]:
-        tau_i += settings.v2v_shortest_path_length(
-            data.G,
-            data.e_i[i],
-            request_assign_node[i][last_vnf])
+    tau_i += settings.v2v_shortest_path_length(
+        data.G,
+        data.s_i[i],
+        request_assign_node[i][first_vnf]
+    )
+    tau_i += settings.v2v_shortest_path_length(
+        data.G,
+        data.e_i[i],
+        request_assign_node[i][last_vnf]
+    )
         
     if tau_i <= data.r_i[i]:
         return True
@@ -134,6 +134,8 @@ def main(data_from_cplex):
         flag = False
         for vnf_type in request:
             sorted_nodes = sort_nodes(buffer_cpu, r_index, vnf_type, buffer_request_assign_node, data)
+            sorted_nodes.remove(data.s_i[r_index])
+            sorted_nodes.remove(data.e_i[r_index])
             for node in sorted_nodes:
                 if vnf_type not in buffer_vnf_on_node[node]:
                     if buffer_mem[node] >= 1 and data.cpu_f[vnf_type] <= buffer_cpu[node]:
