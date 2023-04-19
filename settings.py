@@ -33,9 +33,9 @@ def init(number_of_requests, number_of_VNF_types):
     seed = datetime.now().timestamp()
 
     lower_bound_of_eta_f = 1
-    upper_bound_of_eta_f = 3
-    lower_bound_of_cpu_f = 100
-    upper_bound_of_cpu_f = 2700
+    upper_bound_of_eta_f = 20
+    lower_bound_of_cpu_f = 1
+    upper_bound_of_cpu_f = 7
 
     number_of_individual = 100 # population size
     elitism_rate = 0.1
@@ -44,7 +44,7 @@ def init(number_of_requests, number_of_VNF_types):
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5
     crossover_rate = 0.5
-    mutation_rate = 0.01
+    mutation_rate = 0.05
 
     F = [i for i in range(number_of_VNF_types)]
     # print("F = ", F)

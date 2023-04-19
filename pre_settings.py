@@ -22,12 +22,12 @@ def init():
 
     number_of_nodes = 16
 
-    lower_bound_of_cpu_v = 3720
-    upper_bound_of_cpu_v = 5320
+    lower_bound_of_cpu_v = 8
+    upper_bound_of_cpu_v = 16
     lower_bound_of_mem_v = 2
     upper_bound_of_mem_v = 4
-    lower_bound_of_pi_wv = 2
-    upper_bound_of_pi_wv = 3
+    lower_bound_of_pi_wv = 1
+    upper_bound_of_pi_wv = 10
 
     number_of_topo = 39
     # G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)

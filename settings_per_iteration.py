@@ -7,7 +7,7 @@ def init(number_of_requests, number_of_VNF_types):
     lower_bound_of_F_i = 1
     upper_bound_of_F_i = number_of_VNF_types
     lower_bound_of_r_i = 2 * pre_settings.lower_bound_of_pi_wv
-    upper_bound_of_r_i = 2 * pre_settings.upper_bound_of_pi_wv
+    upper_bound_of_r_i = (number_of_VNF_types + 1) * pre_settings.upper_bound_of_pi_wv
 
     F_i = []
     for i in range(number_of_requests):
@@ -39,8 +39,7 @@ def init(number_of_requests, number_of_VNF_types):
 
     r_i = []
     for i in range(number_of_requests):
-        r = random.randint(lower_bound_of_r_i, upper_bound_of_r_i)
-        r_i.append(r * len(F_i[i]))
+        r_i.append(random.randint(lower_bound_of_r_i, upper_bound_of_r_i))
     # print("r_i = ", r_i)
 
     s_i = []

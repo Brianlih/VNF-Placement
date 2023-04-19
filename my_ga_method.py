@@ -99,7 +99,7 @@ def adjust_occ(p, data):
     i = 0
     while i < len(p):
         if p[i] == -1:
-            start = (i // data.number_of_requests) * data.number_of_VNF_types
+            start = (i // data.number_of_VNF_types) * data.number_of_VNF_types
             last = start + data.number_of_VNF_types - 1
             j = start
             while j <= last:
