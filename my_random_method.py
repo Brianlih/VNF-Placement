@@ -1,6 +1,5 @@
 import time
 from copy import deepcopy
-import networkx as nx
 import random
 import settings
 
@@ -28,14 +27,8 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
 def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
     two_phases_len = []
     for i in range(len(data.nodes)):
-        length = settings.v2v_shortest_path_length(
-                data.G,
-                pre_node,
-                i)
-        length += settings.v2v_shortest_path_length(
-                data.G,
-                i,
-                data.e_i[r_index])
+        length = settings.v2v_shortest_path_length(data.G, pre_node, i)
+        length += settings.v2v_shortest_path_length(data.G, i, data.e_i[r_index])
         two_phases_len.append(length)
     return two_phases_len
 
@@ -56,10 +49,11 @@ def main(data_from_cplex):
     rest_mem_v = deepcopy(data.mem_v)
     random_request_sequence = random.sample(data.F_i, k=len(data.F_i))
 
+    r_index = -1
     rrs_index = 0
     while rrs_index < data.number_of_requests:
         request = random_request_sequence[rrs_index]
-        for i in range(len(data.F_i)):
+        for i in range(data.number_of_requests):
             if request == data.F_i[i] and if_considered_to_placed[i] == False:
                 r_index = i
                 if_considered_to_placed[i] = True

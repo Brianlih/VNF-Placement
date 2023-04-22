@@ -175,6 +175,11 @@ def main(data_from_cplex):
     # print("greedy solution: ", request_assign_node)
     end_time = time.time()
     time_cost = end_time - start_time
+
+    greedy_solution = []
+    for i in range(data.number_of_requests):
+        greedy_solution.extend(request_assign_node[i])
+
     total_profit = 0
     acc_count = 0
     for i in range(data.number_of_requests):
@@ -183,7 +188,8 @@ def main(data_from_cplex):
             acc_count += 1
     res = {
         "total_profit": total_profit,
-        "time_cost": time_cost
+        "time_cost": time_cost,
+        "solution": greedy_solution
     }
     # print("acc_count: ", acc_count)
     return res
