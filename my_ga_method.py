@@ -313,7 +313,6 @@ def main(data_from_cplex):
                                             break
                                 # Check occupied situation
                                 p1 = adjust_occ(p1, data)
-                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -333,7 +332,6 @@ def main(data_from_cplex):
                                         break
                                 # Check occupied situation
                                 p1 = adjust_occ(p1, data)
-                                p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
                                 p2_available_nodes,
@@ -362,7 +360,6 @@ def main(data_from_cplex):
                                             p2[i] = rn
                                             break
                                 # Check occupied situation
-                                p1 = adjust_occ(p1, data)
                                 p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
@@ -382,7 +379,6 @@ def main(data_from_cplex):
                                         p2[i] = rn
                                         break
                                 # Check occupied situation
-                                p1 = adjust_occ(p1, data)
                                 p2 = adjust_occ(p2, data)
                                 # Check constraints
                                 (p1_available_nodes,
@@ -399,12 +395,13 @@ def main(data_from_cplex):
                 if flag:
                     break
                 it_cm += 1
+            # print("it_cm:", it_cm)
             if it_cm > data.max_repeat_time:
                 count += 1
                 population.append(population[p1_index])
                 population.append(population[p2_index])
 
-        print("count: ", count)
+        # print("count: ", count)
         del population[:data.number_of_individual]
 
         # Calculate the fitness value of each individual, and sort them in decresing order
@@ -427,9 +424,9 @@ def main(data_from_cplex):
             current_fittest = fitness_of_chromosomes[0]
         if same_res_count >= 50:
             break
-        print("CPLEX res: ", data.cplex_res)
-        print("fittest_value: ", fitness_of_chromosomes[0])
-        print("it: ", it)
+        # print("CPLEX res: ", data.cplex_res)
+        # print("fittest_value: ", fitness_of_chromosomes[0])
+        # print("it: ", it)
         it += 1
     
     # solution = population[fitness_of_chromosomes.index(fittest[-1])]

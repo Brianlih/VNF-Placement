@@ -10,7 +10,7 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, se
     random.seed(seed)
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         for i in range(len(nodes_firstColumn))]
-    print("edge_weights = ", edge_weights)
+    # print("edge_weights = ", edge_weights)
     Graph = nx.Graph()
     for i in range(len(nodes_firstColumn)):
         Graph.add_edge(nodes_firstColumn[i], nodes_secondColumn[i], weight=edge_weights[i])
@@ -21,7 +21,7 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, se
 def init(seed):
     global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
-    number_of_nodes = 30
+    number_of_nodes = 16
 
     lower_bound_of_cpu_v = 8
     upper_bound_of_cpu_v = 16
@@ -30,10 +30,10 @@ def init(seed):
     lower_bound_of_pi_wv = 1
     upper_bound_of_pi_wv = 10
 
-    number_of_topo = 95
-    G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+    number_of_topo = 39
+    # G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-    # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+    G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     # nx.draw_networkx(G)
     # plt.show()
@@ -43,7 +43,7 @@ def init(seed):
     nodes = []
     for i in range(number_of_nodes):
         nodes.append(i)
-    print("nodes = ", nodes)
+    # print("nodes = ", nodes)
 
     s = seed
     cpu_v = []
@@ -51,7 +51,7 @@ def init(seed):
         random.seed(s)
         cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
         s += 1
-    print("cpu_v = ", cpu_v)
+    # print("cpu_v = ", cpu_v)
 
     s = seed
     mem_v = []
@@ -59,4 +59,4 @@ def init(seed):
         random.seed(s)
         mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
         s += 1
-    print("mem_v = ", mem_v)
+    # print("mem_v = ", mem_v)

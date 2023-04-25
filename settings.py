@@ -36,17 +36,17 @@ def init(number_of_requests, number_of_VNF_types, seed):
     lower_bound_of_cpu_f = 1
     upper_bound_of_cpu_f = 7
 
-    number_of_individual = 100 # population size
+    number_of_individual = 50 # population size
     elitism_rate = 0.1
     iteration_for_ga = 100
-    max_repeat_time = 1
+    max_repeat_time = 10
     number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
     number_of_individual_chose_from_population_for_tournament = 5
     crossover_rate = 0.5
     mutation_rate = 0.02
 
     F = [i for i in range(number_of_VNF_types)]
-    print("F = ", F)
+    # print("F = ", F)
 
     eta_f =[]
     s = seed
@@ -54,7 +54,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
         random.seed(s)
         eta_f.append(random.randint(lower_bound_of_eta_f, upper_bound_of_eta_f))
         s += 1
-    print("eta_f = ", eta_f)
+    # print("eta_f = ", eta_f)
 
     cpu_f = []
     s = seed
@@ -62,4 +62,4 @@ def init(number_of_requests, number_of_VNF_types, seed):
         random.seed(s)
         cpu_f.append(random.randint(lower_bound_of_cpu_f, upper_bound_of_cpu_f))
         s += 1
-    print("cpu_f = ", cpu_f)
+    # print("cpu_f = ", cpu_f)

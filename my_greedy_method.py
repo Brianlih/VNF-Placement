@@ -34,25 +34,10 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
         return True
     return False
 
-def calculate_requests_needed_cpu(data):
-    request_needed_cpu = []
-    for i in range(len(data.F_i)):
-        cpu_count = 0
-        for j in range(len(data.F_i[i])):
-            cpu_count += data.cpu_f[data.F_i[i][j]]
-        request_needed_cpu.append(cpu_count)
-    return request_needed_cpu
-
-def sort_requests(request_needed_cpu, data):
+def sort_requests(data):
     request_value = []
-    max_c = max(request_needed_cpu)
-    min_c = min(request_needed_cpu)
-    max_p = max(data.profit_i)
-    min_p = min(data.profit_i)
     for i in range(len(data.F_i)):
-        request_value.append(((data.profit_i[i] - min_p + 1) / (max_p - min_p + 1))
-            / ((request_needed_cpu[i] - min_c + 1) / (max_c - min_c + 1))
-        )
+        request_value.append(data.profit_i[i])
             
     sorted_requests = sorted(
         data.F_i,
@@ -62,33 +47,10 @@ def sort_requests(request_needed_cpu, data):
     
     return sorted_requests
 
-def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
-    two_phases_len = []
-    for i in range(len(data.nodes)):
-        length = settings.v2v_shortest_path_length(data.G, pre_node, i)
-        length += settings.v2v_shortest_path_length(data.G, i, data.e_i[r_index])
-        two_phases_len.append(length)
-    return two_phases_len
-
-def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
+def sort_nodes(rest_cpu_v, data):
     node_value = []
-    is_first_vnf = settings.check_is_first_vnf(vnf_type, data.F_i[r_index])
-    if is_first_vnf:
-        pre_node = data.s_i[r_index]
-    else:
-        pre_vnf_index = data.F_i[r_index].index(vnf_type) - 1
-        pre_vnf = data.F_i[r_index][pre_vnf_index]
-        pre_node = buffer_request_assign_node[r_index][pre_vnf]
-    two_phases_len = calculate_two_phase_length_of_nodes(pre_node, r_index, data)
-    max_tpl = max(two_phases_len)
-    min_tpl = min(two_phases_len)
-    max_rc = max(rest_cpu_v)
-    min_rc = min(rest_cpu_v)
     for i in range(len(data.nodes)):
-        node_value.append(
-            ((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1))
-            / ((two_phases_len[i] - min_tpl + 1)/ (max_tpl - min_tpl + 1))
-        )
+        node_value.append(rest_cpu_v[i])
     sorted_nodes = sorted(
         data.nodes,
         key= lambda node : node_value[node],
@@ -109,8 +71,7 @@ def main(data_from_cplex):
         for j in range(data.number_of_VNF_types):
             request_assign_node[i].append(-2)
     
-    request_needed_cpu = calculate_requests_needed_cpu(data)
-    sorted_requests = sort_requests(request_needed_cpu, data)
+    sorted_requests = sort_requests(data)
     
     rest_cpu_v = deepcopy(data.cpu_v)
     rest_mem_v = deepcopy(data.mem_v)
@@ -133,7 +94,7 @@ def main(data_from_cplex):
         # Greedy
         flag = False
         for vnf_type in request:
-            sorted_nodes = sort_nodes(buffer_cpu, r_index, vnf_type, buffer_request_assign_node, data)
+            sorted_nodes = sort_nodes(buffer_cpu, data)
             sorted_nodes.remove(data.s_i[r_index])
             sorted_nodes.remove(data.e_i[r_index])
             for node in sorted_nodes:

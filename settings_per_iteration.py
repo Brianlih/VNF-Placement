@@ -19,7 +19,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
         tmp = random.sample(settings.F, number_of_needed_VNF_by_request_i)
         F_i.append(tmp)
         s += 1
-    print("F_i = ", F_i)
+    # print("F_i = ", F_i)
 
     psi_f = []
     count = 0
@@ -31,7 +31,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
                     break
         psi_f.append(count / number_of_requests)
         count = 0
-    print("psi_f = ", psi_f)
+    # print("psi_f = ", psi_f)
 
     profit_i = []
     for i in range(number_of_requests):
@@ -39,7 +39,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
         for j in range(len(F_i[i])):
             profit += settings.eta_f[F_i[i][j]] * (1 + psi_f[F_i[i][j]]) * settings.cpu_f[F_i[i][j]]
         profit_i.append(profit)
-    print("profit_i = ", profit_i)
+    # print("profit_i = ", profit_i)
 
     s = seed
     r_i = []
@@ -47,7 +47,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
         random.seed(s)
         r_i.append(random.randint(lower_bound_of_r_i, upper_bound_of_r_i))
         s += 1
-    print("r_i = ", r_i)
+    # print("r_i = ", r_i)
 
     s = seed
     s_i = []
@@ -55,7 +55,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
         random.seed(s)
         s_i.append(random.randint(0, pre_settings.number_of_nodes - 1))
         s += 1
-    print("s_i = ", s_i)
+    # print("s_i = ", s_i)
 
     s = seed
     t = 123
@@ -69,5 +69,5 @@ def init(number_of_requests, number_of_VNF_types, seed):
             t += 1
         e_i.append(buffer)
         s += 1
-    print("e_i = ", e_i)
+    # print("e_i = ", e_i)
     # print("==================================================================================")
