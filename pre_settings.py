@@ -7,15 +7,15 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, se
     nodes_firstColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(1))
     nodes_secondColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(2))
     quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
-    random.seed(seed)
+    # random.seed(seed)
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         for i in range(len(nodes_firstColumn))]
     # print("edge_weights = ", edge_weights)
     Graph = nx.Graph()
     for i in range(len(nodes_firstColumn)):
         Graph.add_edge(nodes_firstColumn[i], nodes_secondColumn[i], weight=edge_weights[i])
-    for i in range(quantity_nodes):
-        Graph.add_edge(i, i, weight=0)
+    # for i in range(quantity_nodes):
+    #     Graph.add_edge(i, i, weight=0)
     return Graph
 
 def init(seed):
@@ -30,7 +30,7 @@ def init(seed):
     lower_bound_of_pi_wv = 1
     upper_bound_of_pi_wv = 10
 
-    number_of_topo = 39
+    number_of_topo = 1
     # G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
@@ -48,7 +48,7 @@ def init(seed):
     s = seed
     cpu_v = []
     for i in range(number_of_nodes):
-        random.seed(s)
+        # random.seed(s)
         cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
         s += 1
     # print("cpu_v = ", cpu_v)
@@ -56,7 +56,7 @@ def init(seed):
     s = seed
     mem_v = []
     for i in range(number_of_nodes):
-        random.seed(s)
+        # random.seed(s)
         mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
         s += 1
     # print("mem_v = ", mem_v)

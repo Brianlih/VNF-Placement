@@ -13,9 +13,9 @@ def init(number_of_requests, number_of_VNF_types, seed):
     F_i = []
     for i in range(number_of_requests):
         tmp = []
-        random.seed(s)
+        # random.seed(s)
         number_of_needed_VNF_by_request_i = random.randint(lower_bound_of_F_i, upper_bound_of_F_i)
-        random.seed(s)
+        # random.seed(s)
         tmp = random.sample(settings.F, number_of_needed_VNF_by_request_i)
         F_i.append(tmp)
         s += 1
@@ -44,7 +44,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
     s = seed
     r_i = []
     for i in range(number_of_requests):
-        random.seed(s)
+        # random.seed(s)
         r_i.append(random.randint(lower_bound_of_r_i, upper_bound_of_r_i))
         s += 1
     # print("r_i = ", r_i)
@@ -52,7 +52,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
     s = seed
     s_i = []
     for i in range(number_of_requests):
-        random.seed(s)
+        # random.seed(s)
         s_i.append(random.randint(0, pre_settings.number_of_nodes - 1))
         s += 1
     # print("s_i = ", s_i)
@@ -61,10 +61,10 @@ def init(number_of_requests, number_of_VNF_types, seed):
     t = 123
     e_i = []
     for i in range(number_of_requests):
-        random.seed(s)
+        # random.seed(s)
         buffer = random.randint(0, pre_settings.number_of_nodes - 1)
         while(buffer == s_i[i]):
-            random.seed(t)
+            # random.seed(t)
             buffer = random.randint(0, pre_settings.number_of_nodes - 1)
             t += 1
         e_i.append(buffer)

@@ -51,7 +51,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
     eta_f =[]
     s = seed
     for i in range(number_of_VNF_types):
-        random.seed(s)
+        # random.seed(s)
         eta_f.append(random.randint(lower_bound_of_eta_f, upper_bound_of_eta_f))
         s += 1
     # print("eta_f = ", eta_f)
@@ -59,7 +59,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
     cpu_f = []
     s = seed
     for i in range(number_of_VNF_types):
-        random.seed(s)
+        # random.seed(s)
         cpu_f.append(random.randint(lower_bound_of_cpu_f, upper_bound_of_cpu_f))
         s += 1
     # print("cpu_f = ", cpu_f)
