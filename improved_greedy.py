@@ -70,8 +70,9 @@ def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
         two_phases_len.append(length)
     return two_phases_len
 
-def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
+def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_vnf_on_node, buffer_request_assign_node, data):
     node_value = []
+    weight = 1
     is_first_vnf = settings.check_is_first_vnf(vnf_type, data.F_i[r_index])
     if is_first_vnf:
         pre_node = data.s_i[r_index]
@@ -84,9 +85,14 @@ def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
     min_tpl = min(two_phases_len)
     max_rc = max(rest_cpu_v)
     min_rc = min(rest_cpu_v)
+    has_same_vnf_type = 0
     for i in range(len(data.nodes)):
+        if vnf_type in buffer_vnf_on_node[i]:
+            has_same_vnf_type = 1
+        else:
+            has_same_vnf_type = 0
         node_value.append(
-            ((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1))
+            (((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1)) + has_same_vnf_type)
             / ((two_phases_len[i] - min_tpl + 1)/ (max_tpl - min_tpl + 1))
         )
     sorted_nodes = sorted(
@@ -134,7 +140,7 @@ def main(data_from_cplex):
         # Greedy
         flag = False
         for vnf_type in request:
-            sorted_nodes = sort_nodes(buffer_cpu, r_index, vnf_type, buffer_request_assign_node, data)
+            sorted_nodes = sort_nodes(buffer_cpu, r_index, vnf_type, buffer_vnf_on_node, buffer_request_assign_node, data)
             sorted_nodes.remove(data.s_i[r_index])
             sorted_nodes.remove(data.e_i[r_index])
             for node in sorted_nodes:

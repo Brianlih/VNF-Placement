@@ -14,14 +14,26 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, se
     Graph = nx.Graph()
     for i in range(len(nodes_firstColumn)):
         Graph.add_edge(nodes_firstColumn[i], nodes_secondColumn[i], weight=edge_weights[i])
-    # for i in range(quantity_nodes):
-    #     Graph.add_edge(i, i, weight=0)
+    for i in range(quantity_nodes):
+        Graph.add_edge(i, i, weight=0)
+    return Graph
+
+def construct_test_topo(filename_topo):
+    nodes_firstColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(1))
+    nodes_secondColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(2))
+    nodes_thirdColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(3))
+    quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
+    Graph = nx.Graph()
+    for i in range(len(nodes_firstColumn)):
+        Graph.add_edge(nodes_firstColumn[i], nodes_secondColumn[i], weight=nodes_thirdColumn[i])
+    for i in range(quantity_nodes):
+        Graph.add_edge(i, i, weight=0)
     return Graph
 
 def init(seed):
     global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
-    number_of_nodes = 30
+    number_of_nodes = 16
 
     lower_bound_of_cpu_v = 8
     upper_bound_of_cpu_v = 16
@@ -31,6 +43,7 @@ def init(seed):
     upper_bound_of_pi_wv = 10
 
     number_of_topo = 1
+    # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
     # G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
