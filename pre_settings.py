@@ -21,7 +21,7 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, se
 def init(seed):
     global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
-    number_of_nodes = 16
+    number_of_nodes = 30
 
     lower_bound_of_cpu_v = 8
     upper_bound_of_cpu_v = 16

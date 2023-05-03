@@ -31,8 +31,8 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
     )
         
     if tau_i <= data.r_i[i]:
-        return True
-    return False
+        return True, tau_i
+    return False, tau_i
 
 def calculate_requests_needed_cpu(data):
     request_needed_cpu = []
@@ -99,6 +99,7 @@ def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
 def main(data_from_cplex):
     data = data_from_cplex
     if_considered_to_placed = [False for i in range(data.number_of_requests)]
+    total_delay = 0
     start_time = time.time()
 
     # Initialize decision variables
@@ -158,12 +159,14 @@ def main(data_from_cplex):
                 buffer_request_assign_node = request_assign_node
                 break
         if not flag:
-            if check_if_meet_delay_requirement(buffer_request_assign_node, r_index, data):
+            meet, delay = check_if_meet_delay_requirement(buffer_request_assign_node, r_index, data)
+            if meet:
                 rest_cpu_v = buffer_cpu
                 rest_mem_v = buffer_mem
                 vnf_on_node = buffer_vnf_on_node
                 request_assign_node = buffer_request_assign_node
                 buffer_z[r_index] = 1
+                total_delay += delay
             else:
                 # Return to the state before placing request
                 buffer_cpu = rest_cpu_v
@@ -186,10 +189,18 @@ def main(data_from_cplex):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
             acc_count += 1
+    average_delay = 0
+    if acc_count > 0:
+        average_delay = total_delay / acc_count
+    else:
+        average_delay = 0
+    acc_rate = acc_count / data.number_of_requests
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost,
-        "solution": greedy_solution
+        "solution": greedy_solution,
+        "acc_rate": acc_rate,
+        "average_delay": average_delay
     }
     # print("acc_count: ", acc_count)
     return res
