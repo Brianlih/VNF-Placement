@@ -24,12 +24,14 @@ def check_if_meet_delay_requirement(request_assign_node, i, data):
         tau_i += settings.v2v_shortest_path_length(
             data.G,
             data.s_i[i],
-            request_assign_node[i][first_vnf])
+            request_assign_node[i][first_vnf]
+        )
     if request_assign_node[i][last_vnf] != data.e_i[i]:
         tau_i += settings.v2v_shortest_path_length(
             data.G,
             data.e_i[i],
-            request_assign_node[i][last_vnf])
+            request_assign_node[i][last_vnf]
+        )
         
     if tau_i <= data.r_i[i]:
         return True, tau_i

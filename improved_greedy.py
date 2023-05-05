@@ -92,13 +92,10 @@ def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_vnf_on_node, buffer_request
         else:
             has_same_vnf_type = 0
         node_value.append(
-            (((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1)) + has_same_vnf_type)
+            ((rest_cpu_v[i] - min_rc + 1)/ (max_rc - min_rc + 1))
             / ((two_phases_len[i] - min_tpl + 1)/ (max_tpl - min_tpl + 1))
         )
-    sorted_nodes = sorted(
-        data.nodes,
-        key= lambda node : node_value[node],
-        reverse=True)
+    sorted_nodes = sorted(data.nodes, key= lambda node : node_value[node], reverse=True)
     
     return sorted_nodes
 

@@ -1,21 +1,40 @@
-import random, time
+import random, time, math
 from copy import deepcopy
 import settings
 
 def find_new_solution(improved_greedy_sol, data):
+    new_sol_available_nodes = []
+    new_sol_overload_nodes = []
+    candidates = []
     new_sol = deepcopy(improved_greedy_sol)
     r_index = random.randint(0, data.number_of_requests - 1)
-    vnf_type = random.sample(data.F_i[r_index], k=1)
+    tmp = random.sample(data.F_i[r_index], k=1)
+    vnf_type = tmp[0]
     start = data.number_of_VNF_types * r_index
     mut_loc = start + vnf_type
+    mut_node = new_sol[mut_loc]
     while True:
         rn = random.randint(-1, data.number_of_nodes - 1)
         if rn != new_sol[mut_loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
             new_sol[mut_loc] = rn
             break
+    while True:
+        new_sol_available_nodes, new_sol_overload_nodes = check_capacity(new_sol, data)
+        if mut_node in new_sol_overload_nodes:
+            for i in range(len(improved_greedy_sol)):
+                if improved_greedy_sol[i] == mut_node and i != mut_loc:
+                    candidates.append(i)
+            tmp = random.sample(candidates, k=1)
+            loc = tmp[0]
+            new_sol[loc] = random.sample(new_sol_available_nodes, k=1)
+            new_sol_available_nodes, new_sol_overload_nodes = check_capacity(new_sol, data)
+        if new_sol_overload_nodes == []:
+            break
     return new_sol
 
 def check_if_meet_delay_requirement(request, i, data):
+    if -1 in request:
+        return False
     tau_vnf_i = 0
     tau_i = 0
     first_vnf = -1
@@ -75,16 +94,87 @@ def check_acception(new_sol, data):
     for i in range(data.number_of_requests):
         start = data.number_of_VNF_types * i
         end = start + data.number_of_VNF_types
-        acception.append(check_if_meet_delay_requirement(new_sol[start:end], i, data))
+        if check_if_meet_delay_requirement(new_sol[start:end], i, data):
+            acception.append(True)
+        else:
+            j = start
+            while j < end:
+                if new_sol[j] != -2:
+                    new_sol[j] = -1
+                j += 1
+            acception.append(False)
     return acception
+
+def adjust_occ(sol, data):
+    start = -1
+    last = -1
+    for i in range(data.number_of_requests):
+        start = i * data.number_of_VNF_types
+        last = start + data.number_of_VNF_types - 1
+        count = 0
+
+        j = start
+        while j <= last:
+            if sol[j] != -2 and sol[j] != -1:
+                count += 1
+            j += 1
+
+        if count < len(data.F_i[i]):
+            j = start
+            while j <= last:
+                vnf_type = j % data.number_of_VNF_types
+                if vnf_type in data.F_i[i]:
+                    sol[j] = -1
+                j += 1
+    return sol
 
 def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     data = data_from_cplex
+    seed = 123
+    start_time = time.time()
+
+    current_sol = deepcopy(improved_greedy_sol)
     current_temperature = 1000
     final_temperature = 0.01
     cooling_rate = 0.99
+    diff = 0
+    prob = 0
+    total_profit = 0
+    current_best_res = improved_greedy_res
 
     while current_temperature > final_temperature:
-        cap = check_capacity(new_sol, data)
-        new_sol = find_new_solution(improved_greedy_sol, cap, data)
+        print("current_temperature:",  current_temperature)
+        new_sol = find_new_solution(current_sol, data)
+        new_sol = adjust_occ(new_sol, data)
         acception = check_acception(new_sol, data)
+        profit = 0
+        for i in range(data.number_of_requests):
+            if acception[i]:
+                profit += data.profit_i[i]
+        if profit > current_best_res:
+            current_best_res = profit
+            current_sol = new_sol
+        else:
+            diff = profit - current_best_res
+            prob = math.exp(-diff / current_temperature)
+            if random.uniform(0, 1) < prob:
+                current_best_res = profit
+                current_sol = new_sol
+        current_temperature *= cooling_rate
+
+    end_time = time.time()
+    time_cost = end_time - start_time
+
+    if current_best_res > improved_greedy_res:
+        total_profit = current_best_res
+    else:
+        total_profit = improved_greedy_res
+
+    res = {
+        "total_profit": total_profit,
+        "time_cost": time_cost,
+        # "solution": greedy_solution,
+        # "acc_rate": acc_rate,
+        # "average_delay": average_delay
+    }
+    return res

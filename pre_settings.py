@@ -7,7 +7,7 @@ def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, se
     nodes_firstColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(1))
     nodes_secondColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(2))
     quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
-    # random.seed(seed)
+    random.seed(seed)
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         for i in range(len(nodes_firstColumn))]
     # print("edge_weights = ", edge_weights)
@@ -61,7 +61,7 @@ def init(seed):
     s = seed
     cpu_v = []
     for i in range(number_of_nodes):
-        # random.seed(s)
+        random.seed(s)
         cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
         s += 1
     # print("cpu_v = ", cpu_v)
@@ -69,7 +69,7 @@ def init(seed):
     s = seed
     mem_v = []
     for i in range(number_of_nodes):
-        # random.seed(s)
+        random.seed(s)
         mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
         s += 1
     # print("mem_v = ", mem_v)
