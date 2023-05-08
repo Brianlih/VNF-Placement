@@ -39,10 +39,10 @@ def sort_requests(data):
     
     return sorted_requests
 
-def sort_nodes(pre_node, data):
+def sort_nodes(rest_cpu_v, data):
     node_value = []
     for i in range(len(data.nodes)):
-        node_value.append(settings.v2v_shortest_path_length(data.G, pre_node, i))
+        node_value.append(rest_cpu_v[i])
     sorted_nodes = sorted(data.nodes, key= lambda node : node_value[node])
     
     return sorted_nodes
@@ -88,7 +88,7 @@ def main(data_from_cplex):
                 pre_node = data.s_i[r_index]
             else:
                 pre_node = buffer_request_assign_node[r_index][request[request.index(vnf_type) - 1]]
-            sorted_nodes = sort_nodes(pre_node, data)
+            sorted_nodes = sort_nodes(buffer_cpu, data)
             sorted_nodes.remove(data.s_i[r_index])
             sorted_nodes.remove(data.e_i[r_index])
             for node in sorted_nodes:

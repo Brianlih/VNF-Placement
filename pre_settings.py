@@ -33,7 +33,7 @@ def construct_test_topo(filename_topo):
 def init(seed):
     global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
-    number_of_nodes = 16
+    number_of_nodes = 11
 
     lower_bound_of_cpu_v = 8
     upper_bound_of_cpu_v = 16

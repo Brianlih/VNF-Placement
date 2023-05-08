@@ -2,32 +2,41 @@ import random, time, math
 from copy import deepcopy
 import settings
 
-def find_new_solution(improved_greedy_sol, data):
+def find_new_solution(improved_greedy_sol, data, seed):
     new_sol_available_nodes = []
     new_sol_overload_nodes = []
     candidates = []
     new_sol = deepcopy(improved_greedy_sol)
+    random.seed(seed)
     r_index = random.randint(0, data.number_of_requests - 1)
+    random.seed(seed)
     tmp = random.sample(data.F_i[r_index], k=1)
     vnf_type = tmp[0]
     start = data.number_of_VNF_types * r_index
     mut_loc = start + vnf_type
-    mut_node = new_sol[mut_loc]
+    mut_node = -1
     while True:
+        random.seed(seed)
         rn = random.randint(-1, data.number_of_nodes - 1)
         if rn != new_sol[mut_loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
             new_sol[mut_loc] = rn
+            mut_node = rn
             break
+        seed += 1
+    new_sol_available_nodes, new_sol_overload_nodes = check_capacity(new_sol, data)
     while True:
-        new_sol_available_nodes, new_sol_overload_nodes = check_capacity(new_sol, data)
-        if mut_node in new_sol_overload_nodes:
-            for i in range(len(improved_greedy_sol)):
-                if improved_greedy_sol[i] == mut_node and i != mut_loc:
+        for node in new_sol_overload_nodes:
+            for i in range(len(new_sol)):
+                if new_sol[i] == node and i != mut_loc:
                     candidates.append(i)
+            random.seed(seed)
             tmp = random.sample(candidates, k=1)
             loc = tmp[0]
-            new_sol[loc] = random.sample(new_sol_available_nodes, k=1)
+            random.seed(seed)
+            buffer = random.sample(new_sol_available_nodes, k=1)
+            new_sol[loc] = buffer[0]
             new_sol_available_nodes, new_sol_overload_nodes = check_capacity(new_sol, data)
+            seed += 1
         if new_sol_overload_nodes == []:
             break
     return new_sol
@@ -123,7 +132,7 @@ def adjust_occ(sol, data):
             j = start
             while j <= last:
                 vnf_type = j % data.number_of_VNF_types
-                if vnf_type in data.F_i[i]:
+                if vnf_type in data.F_i[i] and sol[j] == -2:
                     sol[j] = -1
                 j += 1
     return sol
@@ -134,44 +143,46 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     start_time = time.time()
 
     current_sol = deepcopy(improved_greedy_sol)
-    current_temperature = 1000
+    current_temperature = 100000
     final_temperature = 0.01
     cooling_rate = 0.99
     diff = 0
     prob = 0
-    total_profit = 0
     current_best_res = improved_greedy_res
 
     while current_temperature > final_temperature:
-        print("current_temperature:",  current_temperature)
-        new_sol = find_new_solution(current_sol, data)
+        # print("current_temperature:",  current_temperature)
+        new_sol = find_new_solution(current_sol, data, seed)
         new_sol = adjust_occ(new_sol, data)
         acception = check_acception(new_sol, data)
         profit = 0
         for i in range(data.number_of_requests):
             if acception[i]:
                 profit += data.profit_i[i]
-        if profit > current_best_res:
+        if profit >= current_best_res:
             current_best_res = profit
             current_sol = new_sol
         else:
             diff = profit - current_best_res
-            prob = math.exp(-diff / current_temperature)
+            prob = math.exp(diff / current_temperature)
+            random.seed(seed)
             if random.uniform(0, 1) < prob:
                 current_best_res = profit
                 current_sol = new_sol
         current_temperature *= cooling_rate
+        seed += 1
 
     end_time = time.time()
     time_cost = end_time - start_time
 
+    total_profit = 0
     if current_best_res > improved_greedy_res:
         total_profit = current_best_res
     else:
         total_profit = improved_greedy_res
 
     res = {
-        "total_profit": total_profit,
+        "total_profit": current_best_res,
         "time_cost": time_cost,
         # "solution": greedy_solution,
         # "acc_rate": acc_rate,
