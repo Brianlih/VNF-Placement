@@ -14,13 +14,11 @@ def find_new_solution(improved_greedy_sol, data, seed):
     vnf_type = tmp[0]
     start = data.number_of_VNF_types * r_index
     mut_loc = start + vnf_type
-    mut_node = -1
     while True:
         random.seed(seed)
         rn = random.randint(-1, data.number_of_nodes - 1)
         if rn != new_sol[mut_loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
             new_sol[mut_loc] = rn
-            mut_node = rn
             break
         seed += 1
     new_sol_available_nodes, new_sol_overload_nodes = check_capacity(new_sol, data)
@@ -99,18 +97,29 @@ def check_capacity(new_sol, data):
     return new_sol_available_nodes, new_sol_overload_nodes
 
 def check_acception(new_sol, data):
+    start = -1
+    last = -1
     acception = []
     for i in range(data.number_of_requests):
         start = data.number_of_VNF_types * i
         end = start + data.number_of_VNF_types
-        if check_if_meet_delay_requirement(new_sol[start:end], i, data):
+        count = 0
+
+        j = start
+        while j < end:
+            if new_sol[j] != -2 and new_sol[j] != -1:
+                count += 1
+            j += 1
+        if count < len(data.F_i[i]):
+            acception.append(False)
+        elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
             acception.append(True)
         else:
-            j = start
-            while j < end:
-                if new_sol[j] != -2:
-                    new_sol[j] = -1
-                j += 1
+            # j = start
+            # while j < end:
+            #     if new_sol[j] != -2:
+            #         new_sol[j] = -1
+            #     j += 1
             acception.append(False)
     return acception
 
@@ -138,13 +147,15 @@ def adjust_occ(sol, data):
     return sol
 
 def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
+    # for i in range(1000000):
     data = data_from_cplex
-    seed = 123
+    seed = 1
+    # print("seed:", seed)
     start_time = time.time()
 
     current_sol = deepcopy(improved_greedy_sol)
-    current_temperature = 100000
-    final_temperature = 0.01
+    current_temperature = 1
+    final_temperature = 0.0000001
     cooling_rate = 0.99
     diff = 0
     prob = 0
@@ -153,7 +164,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     while current_temperature > final_temperature:
         # print("current_temperature:",  current_temperature)
         new_sol = find_new_solution(current_sol, data, seed)
-        new_sol = adjust_occ(new_sol, data)
+        # new_sol = adjust_occ(new_sol, data)
         acception = check_acception(new_sol, data)
         profit = 0
         for i in range(data.number_of_requests):
@@ -182,7 +193,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
         total_profit = improved_greedy_res
 
     res = {
-        "total_profit": current_best_res,
+        "total_profit": total_profit,
         "time_cost": time_cost,
         # "solution": greedy_solution,
         # "acc_rate": acc_rate,
