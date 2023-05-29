@@ -33,7 +33,7 @@ def construct_test_topo(filename_topo):
 def init(seed):
     global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
 
-    number_of_nodes = 12
+    number_of_nodes = 30
 
     lower_bound_of_cpu_v = 8
     upper_bound_of_cpu_v = 16
@@ -42,7 +42,7 @@ def init(seed):
     lower_bound_of_pi_wv = 1
     upper_bound_of_pi_wv = 10
 
-    number_of_topo = 100
+    number_of_topo = 95
     # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
     G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
     # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)

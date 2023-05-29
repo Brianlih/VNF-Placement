@@ -6,8 +6,8 @@ def init(number_of_requests, number_of_VNF_types, seed):
 
     lower_bound_of_F_i = 1
     upper_bound_of_F_i = 3
-    lower_bound_of_r_i = 10
-    upper_bound_of_r_i = 20
+    lower_bound_of_r_i = 20
+    upper_bound_of_r_i = 30
 
     s = seed
     F_i = []

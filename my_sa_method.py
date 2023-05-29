@@ -147,13 +147,13 @@ def adjust_occ(sol, data):
     return sol
 
 def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
-    # for i in range(1000000):
     data = data_from_cplex
     seed = 1
     # print("seed:", seed)
     start_time = time.time()
 
     current_sol = deepcopy(improved_greedy_sol)
+    new_sol = []
     current_temperature = 1
     final_temperature = 0.0000001
     cooling_rate = 0.99
@@ -192,11 +192,18 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     else:
         total_profit = improved_greedy_res
 
+    acception = check_acception(new_sol, data)
+    acc_count = 0
+    for i in range(len(acception)):
+        if acception[i]:
+            acc_count += 1
+    acc_rate = acc_count / data.number_of_requests
+
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost,
         # "solution": greedy_solution,
-        # "acc_rate": acc_rate,
+        "acc_rate": acc_rate,
         # "average_delay": average_delay
     }
     return res
