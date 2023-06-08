@@ -30,46 +30,44 @@ def construct_test_topo(filename_topo):
         Graph.add_edge(i, i, weight=0)
     return Graph
 
-def init(seed):
-    global G, nodes, cpu_v, mem_v, number_of_nodes, lower_bound_of_pi_wv, upper_bound_of_pi_wv
+def init(seed, run_time, number_of_nodes):
+    global G, nodes, cpu_v, mem_v, lower_bound_of_pi_wv, upper_bound_of_pi_wv
+    if run_time != 0:
+        lower_bound_of_cpu_v = 8
+        upper_bound_of_cpu_v = 16
+        lower_bound_of_mem_v = 2
+        upper_bound_of_mem_v = 4
+        lower_bound_of_pi_wv = 1
+        upper_bound_of_pi_wv = 10
 
-    number_of_nodes = 30
+        number_of_topo = 100
+        # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
+        G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+        # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+        # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+        # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+        # nx.draw_networkx(G)
+        # plt.show()
+        # print("number_of_nodes = ", number_of_nodes)
+        # print("edges = ", G.edges())
 
-    lower_bound_of_cpu_v = 8
-    upper_bound_of_cpu_v = 16
-    lower_bound_of_mem_v = 2
-    upper_bound_of_mem_v = 4
-    lower_bound_of_pi_wv = 1
-    upper_bound_of_pi_wv = 10
+        nodes = []
+        for i in range(number_of_nodes):
+            nodes.append(i)
+        # print("nodes = ", nodes)
 
-    number_of_topo = 95
-    # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
-    G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-    # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-    # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-    # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-    # nx.draw_networkx(G)
-    # plt.show()
-    # print("number_of_nodes = ", number_of_nodes)
-    # print("edges = ", G.edges())
+        s = seed
+        cpu_v = []
+        for i in range(number_of_nodes):
+            random.seed(s)
+            cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
+            s += 1
+        # print("cpu_v = ", cpu_v)
 
-    nodes = []
-    for i in range(number_of_nodes):
-        nodes.append(i)
-    # print("nodes = ", nodes)
-
-    s = seed
-    cpu_v = []
-    for i in range(number_of_nodes):
-        random.seed(s)
-        cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
-        s += 1
-    # print("cpu_v = ", cpu_v)
-
-    s = seed
-    mem_v = []
-    for i in range(number_of_nodes):
-        random.seed(s)
-        mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
-        s += 1
-    # print("mem_v = ", mem_v)
+        s = seed
+        mem_v = []
+        for i in range(number_of_nodes):
+            random.seed(s)
+            mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
+            s += 1
+        # print("mem_v = ", mem_v)
