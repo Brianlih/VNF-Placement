@@ -22,6 +22,8 @@ def find_new_solution(improved_greedy_sol, data, seed):
             break
         seed += 1
     overload_nodes = check_capacity(new_sol, data)
+    flag = True
+    loop_count = 0
     while overload_nodes != []:
         for node in overload_nodes:
             candidates = []
@@ -43,7 +45,11 @@ def find_new_solution(improved_greedy_sol, data, seed):
                 new_sol[loc] = buffer[0]
             overload_nodes = check_capacity(new_sol, data)
             seed += 1
-    return new_sol
+        loop_count += 1
+        if loop_count >= 1000:
+            flag = False
+            break
+    return new_sol, flag
 
 def find_available_nodes(new_sol, v_type, muted_node, data):
     available_nodes = []
@@ -161,23 +167,24 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
 
     while current_temperature > final_temperature:
         # print("current_temperature:",  current_temperature)
-        new_sol = find_new_solution(current_sol, data, seed)
-        acception = check_acception(new_sol, data)
-        profit = 0
-        for i in range(data.number_of_requests):
-            if acception[i]:
-                profit += data.profit_i[i]
-        if profit >= current_best_res:
-            current_best_res = profit
-            current_sol = new_sol
-        else:
-            diff = profit - current_best_res
-            prob = math.exp(diff / current_temperature)
-            random.seed(seed)
-            if random.uniform(0, 1) < prob:
+        new_sol, flag = find_new_solution(current_sol, data, seed)
+        if flag:
+            acception = check_acception(new_sol, data)
+            profit = 0
+            for i in range(data.number_of_requests):
+                if acception[i]:
+                    profit += data.profit_i[i]
+            if profit >= current_best_res:
                 current_best_res = profit
                 current_sol = new_sol
-        current_temperature *= cooling_rate
+            else:
+                diff = profit - current_best_res
+                prob = math.exp(diff / current_temperature)
+                random.seed(seed)
+                if random.uniform(0, 1) < prob:
+                    current_best_res = profit
+                    current_sol = new_sol
+            current_temperature *= cooling_rate
         seed += 1
 
     end_time = time.time()
