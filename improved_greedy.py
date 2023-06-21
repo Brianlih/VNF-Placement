@@ -204,7 +204,10 @@ def main(data_from_cplex):
             count += 1
             if vnf_used_count[i] >= 2:
                 shared_count += 1
-    ratio_of_vnf_shared = shared_count / count
+    if count > 0:
+        ratio_of_vnf_shared = shared_count / count
+    else:
+        ratio_of_vnf_shared = 0
 
     total_profit = 0
     acc_count = 0

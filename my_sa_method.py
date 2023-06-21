@@ -224,7 +224,10 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
             count += 1
             if vnf_used_count[i] >= 2:
                 shared_count += 1
-    ratio_of_vnf_shared = shared_count / count
+    if count > 0:
+        ratio_of_vnf_shared = shared_count / count
+    else:
+        ratio_of_vnf_shared = 0
 
     acception = check_acception(new_sol, data)
     acc_count = 0
