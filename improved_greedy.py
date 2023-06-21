@@ -181,6 +181,31 @@ def main(data_from_cplex):
     for i in range(data.num_of_requests):
         greedy_solution.extend(request_assign_node[i])
 
+    vnf_on_node = [[] for i in range(data.num_of_nodes)]
+    vnf_used_count = [0 for i in range(data.num_of_VNF_types)]
+    for i in data.nodes:
+        for j in range(len(greedy_solution)):
+            if greedy_solution[j] == i:
+                vnf_type = j % data.num_of_VNF_types
+                vnf_on_node[i].append(vnf_type)
+    for i in data.nodes:
+        for j in vnf_on_node[i]:
+            count = 0
+            for k in range(data.num_of_requests):
+                if j in data.F_i[k]:
+                    loc = data.num_of_VNF_types * k + j
+                    if greedy_solution[loc] == i:
+                        count += 1
+            vnf_used_count[j] += count
+    shared_count = 0
+    count = 0
+    for i in range(len(vnf_used_count)):
+        if vnf_used_count[i] >= 1:
+            count += 1
+            if vnf_used_count[i] >= 2:
+                shared_count += 1
+    ratio_of_vnf_shared = shared_count / count
+
     total_profit = 0
     acc_count = 0
     for i in range(data.num_of_requests):
@@ -198,7 +223,8 @@ def main(data_from_cplex):
         "time_cost": time_cost,
         "solution": greedy_solution,
         "acc_rate": acc_rate,
-        "average_delay": average_delay
+        "average_delay": average_delay,
+        "ratio_of_vnf_shared": ratio_of_vnf_shared
     }
     # print("acc_count: ", acc_count)
     return res

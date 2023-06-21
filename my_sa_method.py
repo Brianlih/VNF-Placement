@@ -199,6 +199,32 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
         total_profit = current_best_res
     else:
         total_profit = improved_greedy_res
+        current_sol = improved_greedy_sol
+
+    vnf_on_node = [[] for i in range(data.num_of_nodes)]
+    vnf_used_count = [0 for i in range(data.num_of_VNF_types)]
+    for i in data.nodes:
+        for j in range(len(new_sol)):
+            if new_sol[j] == i:
+                vnf_type = j % data.num_of_VNF_types
+                vnf_on_node[i].append(vnf_type)
+    for i in data.nodes:
+        for j in vnf_on_node[i]:
+            count = 0
+            for k in range(data.num_of_requests):
+                if j in data.F_i[k]:
+                    loc = data.num_of_VNF_types * k + j
+                    if current_sol[loc] == i:
+                        count += 1
+            vnf_used_count[j] += count
+    shared_count = 0
+    count = 0
+    for i in range(len(vnf_used_count)):
+        if vnf_used_count[i] >= 1:
+            count += 1
+            if vnf_used_count[i] >= 2:
+                shared_count += 1
+    ratio_of_vnf_shared = shared_count / count
 
     acception = check_acception(new_sol, data)
     acc_count = 0
@@ -212,6 +238,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
         "time_cost": time_cost,
         # "solution": greedy_solution,
         "acc_rate": acc_rate,
-        # "average_delay": average_delay
+        # "average_delay": average_delay,
+        "ratio_of_vnf_shared": ratio_of_vnf_shared
     }
     return res

@@ -50,6 +50,12 @@ if __name__ == "__main__":
     result_mean_improved_greedy_average_delay = []
     result_mean_sa_average_delay = []
 
+    result_mean_random_average_ratio_of_vnf_shared = []
+    result_mean_greedy_average_ratio_of_vnf_shared = []
+    result_mean_hGreedy_average_ratio_of_vnf_shared = []
+    result_mean_improved_greedy_average_ratio_of_vnf_shared = []
+    result_mean_sa_average_ratio_of_vnf_shared = []
+
     run_time = 0
 
     for nr in range(len(number_of_requests)):
@@ -97,6 +103,14 @@ if __name__ == "__main__":
         mean_improved_greedy_average_delay = 0
         mean_hGreedy_average_delay = 0
         mean_sa_average_delay = 0
+
+        mean_cplex_average_ratio_of_vnf_shared = 0
+        mean_ga_average_ratio_of_vnf_shared = 0
+        mean_random_average_ratio_of_vnf_shared = 0
+        mean_greedy_average_ratio_of_vnf_shared = 0
+        mean_improved_greedy_average_ratio_of_vnf_shared = 0
+        mean_hGreedy_average_ratio_of_vnf_shared = 0
+        mean_sa_average_ratio_of_vnf_shared = 0
 
         # average_request_values = []
         seeds = [1382, 1260, 3642, 34, 1414, 1805, 811, 2934, 66, 4702, 3206, 459, 1586, 103, 3608, 2240, 2496]
@@ -310,6 +324,12 @@ if __name__ == "__main__":
             # mean_improved_greedy_average_delay += improved_greedy_res["average_delay"]
             # mean_sa_average_delay += sa_res["average_delay"]
 
+            # mean_random_average_ratio_of_vnf_shared += random_res["ratio_of_vnf_shared"]
+            # mean_greedy_average_ratio_of_vnf_shared += greedy_res["ratio_of_vnf_shared"]
+            mean_hGreedy_average_ratio_of_vnf_shared += hGreedy_res["ratio_of_vnf_shared"]
+            mean_improved_greedy_average_ratio_of_vnf_shared += improved_greedy_res["ratio_of_vnf_shared"]
+            mean_sa_average_ratio_of_vnf_shared += sa_res["ratio_of_vnf_shared"]
+
         # mean_cplex_res_value /= len(seeds)
         # mean_ga_res_value /= number_of_iteration
         # mean_random_res_value /= number_of_iteration
@@ -337,6 +357,12 @@ if __name__ == "__main__":
         # mean_hGreedy_average_delay /= len(seeds)
         # mean_improved_greedy_average_delay /= len(seeds)
         # mean_sa_average_delay /= len(seeds)
+
+        # mean_random_average_ratio_of_vnf_shared /= number_of_iteration
+        # mean_greedy_average_ratio_of_vnf_shared /= number_of_iteration
+        mean_hGreedy_average_ratio_of_vnf_shared /= len(seeds)
+        mean_improved_greedy_average_ratio_of_vnf_shared /= len(seeds)
+        mean_sa_average_ratio_of_vnf_shared /= len(seeds)
 
 
         # result_mean_cplex_res_value.append(mean_cplex_res_value)
@@ -366,6 +392,12 @@ if __name__ == "__main__":
         # result_mean_hGreedy_average_delay.append(mean_hGreedy_average_delay)
         # result_mean_improved_greedy_average_delay.append(mean_improved_greedy_average_delay)
         # result_mean_sa_average_delay.append(mean_sa_average_delay)
+
+        # result_mean_random_average_ratio_of_vnf_shared.append(mean_random_average_delay)
+        # result_mean_greedy_average_ratio_of_vnf_shared.append(mean_greedy_average_delay)
+        result_mean_hGreedy_average_ratio_of_vnf_shared.append(mean_hGreedy_average_ratio_of_vnf_shared)
+        result_mean_improved_greedy_average_ratio_of_vnf_shared.append(mean_improved_greedy_average_ratio_of_vnf_shared)
+        result_mean_sa_average_ratio_of_vnf_shared.append(mean_sa_average_ratio_of_vnf_shared)
 
 #         flag = True
 #         for i in range(len(result_mean_sa_res_value)):
@@ -437,7 +469,7 @@ if __name__ == "__main__":
     print("result_mean_hGreedy_time_cost: ", result_mean_hGreedy_time_cost)
     print("result_mean_improved_greedy_time_cost: ", result_mean_improved_greedy_time_cost)
     print("result_mean_sa_time_cost: ", result_mean_sa_time_cost)
-    # print("----------------------------------------------------------------------------------")
+    print("----------------------------------------------------------------------------------")
     # print("result_mean_random_acc_rate: ", result_mean_random_acc_rate)
     # print("result_mean_greedy_acc_rate: ", result_mean_greedy_acc_rate)
     print("result_mean_hGreedy_acc_rate: ", result_mean_hGreedy_acc_rate)
@@ -449,6 +481,12 @@ if __name__ == "__main__":
     # print("result_mean_hGreedy_average_delay: ", result_mean_hGreedy_average_delay)
     # print("result_mean_improved_greedy_average_delay: ", result_mean_improved_greedy_average_delay)
     # print("result_mean_sa_average_delay: ", result_mean_sa_average_delay)
+    print("----------------------------------------------------------------------------------")
+    # print("result_mean_random_average_ratio_of_vnf_shared: ", result_mean_random_average_ratio_of_vnf_shared)
+    # print("result_mean_greedy_average_ratio_of_vnf_shared: ", result_mean_greedy_average_ratio_of_vnf_shared)
+    print("result_mean_hGreedy_average_ratio_of_vnf_shared: ", result_mean_hGreedy_average_ratio_of_vnf_shared)
+    print("result_mean_improved_greedy_average_ratio_of_vnf_shared: ", result_mean_improved_greedy_average_ratio_of_vnf_shared)
+    print("result_mean_sa_average_ratio_of_vnf_shared: ", result_mean_sa_average_ratio_of_vnf_shared)
 
     if False:
         results = [result_mean_cplex_time_cost, result_mean_improved_greedy_time_cost, result_mean_greedy_time_cost, result_mean_hGreedy_time_cost]
