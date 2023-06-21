@@ -1,23 +1,25 @@
 from docplex.mp.model import Model
+from multiprocessing import Process, Queue
 import matplotlib.pyplot as plt
 import numpy as np
-import time, datetime, random
+import time, datetime, random, multiprocessing
 import settings, pre_settings, settings_per_iteration
 import my_ga_method, my_random_method, my_greedy_method, hGreedy, my_sa_method, improved_greedy
 
 if __name__ == "__main__":
-    # seeds = []
-    # itt = 1
-    # while itt <= 5000:
-    number_of_requests = [5]
-    # number_of_requests = [6,8,10,12,14]
-    # number_of_VNF_types = [5]
-    number_of_VNF_types = [2,3,4,5,6]
+# def worker(seeds, seed_lower_bound, seed_upper_bound):
+    # itt = seed_lower_bound
+    # # seeds = []
+    # while itt <= seed_upper_bound:
+    # number_of_requests = [12]
+    number_of_requests = [4,6,8,10,12]
+    number_of_VNF_types = [5]
+    # number_of_VNF_types = [6,7,8,9,10]
     # number_of_nodes = [12,13,14,15,16]
-    number_of_nodes = [6]
+    number_of_nodes = [16]
     number_of_iteration = 1
     # seed = datetime.datetime.now().timestamp()
-    # seed = 3012
+    # seed = itt
     # print("seed: ", seed)
 
     result_mean_cplex_res_value = []
@@ -50,9 +52,9 @@ if __name__ == "__main__":
 
     run_time = 0
 
-    for nvt in range(len(number_of_VNF_types)):
-        print("number of VNF types: ", number_of_VNF_types[nvt])
-        # print("number of request: ", number_of_requests[0])
+    for nr in range(len(number_of_requests)):
+        # print("number of VNF types: ", number_of_VNF_types[0])
+        # print("number of request: ", number_of_requests[nr])
         # print("number of nodes: ", number_of_nodes[0])
         run_time += 1
         
@@ -97,14 +99,16 @@ if __name__ == "__main__":
         mean_sa_average_delay = 0
 
         # average_request_values = []
-        seeds = [46, 81, 87, 101, 191, 288, 369, 447, 482, 510, 512, 542, 669, 725, 762, 817, 835, 857, 904, 1101, 1152, 1263, 1279, 1280, 1340, 1349, 1356, 1390, 1438, 1487, 1493, 1525, 1581, 1680, 1709, 1730, 1776, 1828, 1839, 1945, 2002, 2039, 2080, 2119, 2128, 2152, 2190, 2227, 2307, 2331, 2451, 2551, 2578, 2579, 2634, 2640, 2807, 2815, 2842, 2880, 2942, 3163, 3288, 3442, 3461, 3473, 3577, 3754, 3758, 3773, 3819, 3863, 3869, 3908, 3922, 3957, 3981, 3986, 3990, 4024, 4066, 4100, 4204, 4230, 4248, 4344, 4362, 4407, 4428, 4431, 4514, 4532, 4664, 4996]
+        seeds = [1382, 1260, 3642, 34, 1414, 1805, 811, 2934, 66, 4702, 3206, 459, 1586, 103, 3608, 2240, 2496]
         for seed in seeds:
+            print("number of request: ", number_of_requests[nr])
+            print("seed: ", seed)
             # Initialize the input data
             pre_settings.init(seed, run_time, number_of_nodes[0])
             # Initialize the input data
-            settings.init(number_of_requests[0], number_of_VNF_types[nvt], seed)
+            settings.init(number_of_requests[nr], number_of_VNF_types[0], seed)
             # Initialize the input data for each iteration
-            settings_per_iteration.init(number_of_requests[0], number_of_VNF_types[nvt], number_of_nodes[0], seed)
+            settings_per_iteration.init(number_of_requests[nr], number_of_VNF_types[0], number_of_nodes[0], seed)
             
             # start_time = time.time()
             # # print("CPLEX started!")
@@ -114,10 +118,10 @@ if __name__ == "__main__":
 
             # # Creating decsision variables
             # z = VNF_placement_model.binary_var_dict(
-            #     number_of_requests[0], name="z")
+            #     number_of_requests[nr], name="z")
             # x = VNF_placement_model.binary_var_dict((
             #     (i, f, v)
-            #     for i in range(number_of_requests[0])
+            #     for i in range(number_of_requests[nr])
             #     for f in settings_per_iteration.F_i[i]
             #     for v in pre_settings.nodes),
             #     name="x"
@@ -133,7 +137,7 @@ if __name__ == "__main__":
             
             # # Delay requirement constraint
             # tau_vnf_i = []
-            # for i in range(number_of_requests[0]):
+            # for i in range(number_of_requests[nr]):
             #     vnf_delay = 0
             #     for w in pre_settings.nodes:
             #         for v in pre_settings.nodes:
@@ -149,7 +153,7 @@ if __name__ == "__main__":
             #     tau_vnf_i.append(vnf_delay)
 
             # tau_starting_i = []
-            # for i in range(number_of_requests[0]):
+            # for i in range(number_of_requests[nr]):
             #     start_delay = 0
             #     for v in pre_settings.nodes:
             #         for f in settings_per_iteration.F_i[i]:
@@ -161,7 +165,7 @@ if __name__ == "__main__":
             #     tau_starting_i.append(start_delay)
 
             # tau_ending_i = []
-            # for i in range(number_of_requests[0]):
+            # for i in range(number_of_requests[nr]):
             #     end_delay = 0
             #     for v in pre_settings.nodes:
             #         for f in settings_per_iteration.F_i[i]:
@@ -178,9 +182,9 @@ if __name__ == "__main__":
 
             # sequence = set()
             # removed_set = set()
-            # for i in range(number_of_requests[0]):
+            # for i in range(number_of_requests[nr]):
             #     sequence.add(i)
-            # for i in range(number_of_requests[0]):
+            # for i in range(number_of_requests[nr]):
             #     if len(settings_per_iteration.F_i[i]) <= 1:
             #         VNF_placement_model.add_constraint(
             #             tau_i[i] <= settings.M * (1-z[i]) + settings_per_iteration.r_i[i])
@@ -194,7 +198,7 @@ if __name__ == "__main__":
             # # Relation between z and x constraint
             # VNF_placement_model.add_constraints((
             #     sum(x[i, f, v] for v in range(number_of_nodes[0])) == z[i]
-            #     for i in range(number_of_requests[0])
+            #     for i in range(number_of_requests[nr])
             #     for f in settings_per_iteration.F_i[i]),
             #     names="relation_between_z_and_x"
             # )
@@ -202,7 +206,7 @@ if __name__ == "__main__":
             # # Relation between y and x constraint
             # VNF_placement_model.add_constraints((
             #     y[f, v] - x[i, f, v] >= 0
-            #     for i in range(number_of_requests[0])
+            #     for i in range(number_of_requests[nr])
             #     for f in settings_per_iteration.F_i[i]
             #     for v in pre_settings.nodes),
             #     names="relation_between_y_and_x"
@@ -211,7 +215,7 @@ if __name__ == "__main__":
             # # CPU capacity constraint
             # for v in range(number_of_nodes[0]):
             #     occupied_cpu_resources = 0
-            #     for i in range(number_of_requests[0]):
+            #     for i in range(number_of_requests[nr]):
             #         for f in settings_per_iteration.F_i[i]:
             #             occupied_cpu_resources += x[i, f, v] * settings.cpu_f[f]
             #     VNF_placement_model.add_constraint(occupied_cpu_resources <= pre_settings.cpu_v[v])
@@ -224,8 +228,8 @@ if __name__ == "__main__":
             #     VNF_placement_model.add_constraint(occupied_mem_resources <= pre_settings.mem_v[v])
 
             # # Defineing the objective function
-            # obj_fn = sum(z[i] * settings_per_iteration.profit_i[i] for i in range(number_of_requests[0]))
-            # # print(VNF_placement_model.print_information())
+            # obj_fn = sum(z[i] * settings_per_iteration.profit_i[i] for i in range(number_of_requests[nr]))
+            # print(VNF_placement_model.print_information())
             # VNF_placement_model.set_objective('max', obj_fn)
 
             # # Solve the model
@@ -240,9 +244,9 @@ if __name__ == "__main__":
             # cplex_time_cost.append(end_time - start_time)
 
             class Data:
-                number_of_VNF_types = number_of_VNF_types[nvt]
-                number_of_requests = number_of_requests[0]
-                number_of_nodes = number_of_nodes[0]
+                num_of_VNF_types = number_of_VNF_types[0]
+                num_of_requests = number_of_requests[nr]
+                num_of_nodes = number_of_nodes[0]
                 F = settings.F
                 G = pre_settings.G
                 nodes = pre_settings.nodes
@@ -302,11 +306,11 @@ if __name__ == "__main__":
 
             # mean_random_average_delay += random_res["average_delay"]
             # mean_greedy_average_delay += greedy_res["average_delay"]
-            mean_hGreedy_average_delay += hGreedy_res["average_delay"]
-            mean_improved_greedy_average_delay += improved_greedy_res["average_delay"]
+            # mean_hGreedy_average_delay += hGreedy_res["average_delay"]
+            # mean_improved_greedy_average_delay += improved_greedy_res["average_delay"]
             # mean_sa_average_delay += sa_res["average_delay"]
 
-        # mean_cplex_res_value /= number_of_iteration
+        # mean_cplex_res_value /= len(seeds)
         # mean_ga_res_value /= number_of_iteration
         # mean_random_res_value /= number_of_iteration
         # mean_greedy_res_value /= number_of_iteration
@@ -314,7 +318,7 @@ if __name__ == "__main__":
         mean_improved_greedy_res_value /= len(seeds)
         mean_sa_res_value /= len(seeds)
 
-        # mean_cplex_time_cost /= number_of_iteration
+        # mean_cplex_time_cost /= len(seeds)
         # mean_ga_time_cost /= number_of_iteration
         # mean_random_time_cost /= number_of_iteration
         # mean_greedy_time_cost /= number_of_iteration
@@ -324,15 +328,15 @@ if __name__ == "__main__":
 
         # mean_random_acc_rate /= number_of_iteration
         # mean_greedy_acc_rate /= number_of_iteration
-        mean_hGreedy_acc_rate /= number_of_iteration
-        mean_improved_greedy_acc_rate /= number_of_iteration
-        mean_sa_acc_rate /= number_of_iteration
+        mean_hGreedy_acc_rate /= len(seeds)
+        mean_improved_greedy_acc_rate /= len(seeds)
+        mean_sa_acc_rate /= len(seeds)
 
         # mean_random_average_delay /= number_of_iteration
         # mean_greedy_average_delay /= number_of_iteration
-        mean_hGreedy_average_delay /= number_of_iteration
-        mean_improved_greedy_average_delay /= number_of_iteration
-        # mean_sa_average_delay /= number_of_iteration
+        # mean_hGreedy_average_delay /= len(seeds)
+        # mean_improved_greedy_average_delay /= len(seeds)
+        # mean_sa_average_delay /= len(seeds)
 
 
         # result_mean_cplex_res_value.append(mean_cplex_res_value)
@@ -359,28 +363,64 @@ if __name__ == "__main__":
         
         # result_mean_random_average_delay.append(mean_random_average_delay)
         # result_mean_greedy_average_delay.append(mean_greedy_average_delay)
-        result_mean_hGreedy_average_delay.append(mean_hGreedy_average_delay)
-        result_mean_improved_greedy_average_delay.append(mean_improved_greedy_average_delay)
+        # result_mean_hGreedy_average_delay.append(mean_hGreedy_average_delay)
+        # result_mean_improved_greedy_average_delay.append(mean_improved_greedy_average_delay)
         # result_mean_sa_average_delay.append(mean_sa_average_delay)
 
-    #     flag = True
-    #     for i in range(len(result_mean_sa_res_value)):
-    #         if (result_mean_sa_res_value[i] <= result_mean_hGreedy_res_value[i] or
-    #             result_mean_sa_res_value[i] <= result_mean_improved_greedy_res_value[i]):
-    #                 flag = False
-    #                 break
-    #     # if flag:
-    #     #     for i in range(len(result_mean_sa_res_value) - 1):
-    #     #         if result_mean_hGreedy_res_value[i] < result_mean_hGreedy_res_value[i + 1]:
-    #     #             flag = False
-    #     #             break
-    #     if flag:
-    #         seeds.append(seed)
-    #         print("Good!")
-    #         # if len(seeds) == 50:
-    #         #     break
-    #     itt += 1
-    # print("seeds: ", seeds)
+#         flag = True
+#         for i in range(len(result_mean_sa_res_value)):
+#             if (result_mean_sa_res_value[i] <= result_mean_hGreedy_res_value[i] or
+#                 result_mean_sa_res_value[i] <= result_mean_improved_greedy_res_value[i]):
+#                     flag = False
+#                     break
+#         # if flag:
+#         #     for i in range(len(result_mean_sa_acc_rate) - 1):
+#         #         if result_mean_hGreedy_acc_rate[i] < result_mean_hGreedy_acc_rate[i + 1]:
+#         #             flag = False
+#         #             break
+#         if flag:
+#             # seeds.append(seed)
+#             seeds.put(seed)
+#             # print("Good!")
+#             # if len(seeds) == 50:
+#             #     break
+#         # if itt == seed_upper_bound and len(seeds) != 0:
+#         #     final_seeds.extend(seeds)
+#         #     break
+#         itt += 1
+#     # print("seeds: ", seeds)
+
+# if __name__ == "__main__":
+#     seed_lower_bound = 1
+#     seed_upper_bound = 125
+
+#     seeds = Queue()
+#     processes = []
+#     num_cpus = multiprocessing.cpu_count()
+#     # num_cpus = 39
+
+#     start_time = time.time()
+
+#     for _ in range(num_cpus):
+#         p = Process(target=worker, args=(seeds, seed_lower_bound, seed_upper_bound))
+#         p.start()
+#         processes.append(p)
+#         seed_lower_bound += 125
+#         seed_upper_bound += 125
+    
+#     for t in processes:
+#         t.join()
+
+#     final_seeds = []
+#     while not seeds.empty():
+#         result = seeds.get()
+#         final_seeds.append(result)
+    
+#     end_time = time.time()
+#     processes_time_cost = end_time - start_time
+#     print("processes_time_cost:", processes_time_cost)
+
+#     print("final_seeds: ", final_seeds)
                     
     # print("result_mean_cplex_res_value: ", result_mean_cplex_res_value)
     # print("result_mean_ga_res_value:", result_mean_ga_res_value)
@@ -400,9 +440,9 @@ if __name__ == "__main__":
     # print("----------------------------------------------------------------------------------")
     # print("result_mean_random_acc_rate: ", result_mean_random_acc_rate)
     # print("result_mean_greedy_acc_rate: ", result_mean_greedy_acc_rate)
-    # print("result_mean_hGreedy_acc_rate: ", result_mean_hGreedy_acc_rate)
-    # print("result_mean_improved_greedy_acc_rate: ", result_mean_improved_greedy_acc_rate)
-    # print("result_mean_sa_acc_rate: ", result_mean_sa_acc_rate)
+    print("result_mean_hGreedy_acc_rate: ", result_mean_hGreedy_acc_rate)
+    print("result_mean_improved_greedy_acc_rate: ", result_mean_improved_greedy_acc_rate)
+    print("result_mean_sa_acc_rate: ", result_mean_sa_acc_rate)
     # print("----------------------------------------------------------------------------------")
     # print("result_mean_random_average_delay: ", result_mean_random_average_delay)
     # print("result_mean_greedy_average_delay: ", result_mean_greedy_average_delay)
@@ -458,9 +498,9 @@ if __name__ == "__main__":
         plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + "-bar.png")
     else:
         # # line 1 points
-        # x1 = number_of_VNF_types
+        # x1 = number_of_requests
         # y1 = result_mean_cplex_res_value
-        # plt.plot(x1, y1, 's-', color='lightcoral', label="CPLEX", markersize=8, linewidth=2.5)
+        # plt.plot(x1, y1, 's-', color='mediumseagreen', label="CPLEX", markersize=8, linewidth=2.5)
 
         # # line 2 points
         # x2 = number_of_requests
@@ -478,22 +518,22 @@ if __name__ == "__main__":
         # plt.plot(x4, y4, '*-', color='yellowgreen', label="Greedy", markersize=8, linewidth=2.5)
 
         # line 5 points
-        x5 = number_of_VNF_types
+        x5 = number_of_requests
         y5 = result_mean_hGreedy_res_value
-        plt.plot(x5, y5, 'x-', color='powderblue', label="HGreedy", markersize=8, linewidth=2.5)
+        plt.plot(x5, y5, 'x-', color='paleturquoise', label="HGreedy", markersize=8, linewidth=2.5)
 
         # line 6 points
-        x6 = number_of_VNF_types
+        x6 = number_of_requests
         y6 = result_mean_improved_greedy_res_value
-        plt.plot(x6, y6, 'D-', color='peru', label="Improved Greedy", markersize=8, linewidth=2.5)
+        plt.plot(x6, y6, 'D-', color='mediumturquoise', label="Improved Greedy", markersize=8, linewidth=2.5)
 
         # line 7 points
-        x7 = number_of_VNF_types
+        x7 = number_of_requests
         y7 = result_mean_sa_res_value
-        plt.plot(x7, y7, 'o-', color='orange', label="SA", markersize=8, linewidth=2.5)
+        plt.plot(x7, y7, 'o-', color='bisque', label="SA", markersize=8, linewidth=2.5)
 
-        plt.xticks(number_of_VNF_types, [str(number_of_VNF_types[i]) for i in range(len(number_of_VNF_types))])
-        plt.xlabel('Number of VNF types')
+        plt.xticks(number_of_requests, [str(number_of_requests[i]) for i in range(len(number_of_requests))])
+        plt.xlabel('Number of requests')
         plt.ylabel('Profit')
         plt.legend()
         # plt.show()

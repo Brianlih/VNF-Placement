@@ -48,16 +48,16 @@ def sort_candidates(candidates, pre_node, graph):
 
 def main(data_from_cplex):
     data = data_from_cplex
-    if_considered_to_placed = [False for i in range(data.number_of_requests)]
+    if_considered_to_placed = [False for i in range(data.num_of_requests)]
     total_delay = 0
     start_time = time.time()
 
     # Initialize decision variables
-    buffer_z = [0] * data.number_of_requests # z
-    vnf_on_node = [[] for i in range(data.number_of_nodes)] # y
-    request_assign_node = [[] for i in range(data.number_of_requests)] # x
-    for i in range(data.number_of_requests):
-        for j in range(data.number_of_VNF_types):
+    buffer_z = [0] * data.num_of_requests # z
+    vnf_on_node = [[] for i in range(data.num_of_nodes)] # y
+    request_assign_node = [[] for i in range(data.num_of_requests)] # x
+    for i in range(data.num_of_requests):
+        for j in range(data.num_of_VNF_types):
             request_assign_node[i].append(-2)
     
     sorted_requests = sorted(
@@ -146,7 +146,7 @@ def main(data_from_cplex):
     time_cost = end_time - start_time
     total_profit = 0
     acc_count = 0
-    for i in range(data.number_of_requests):
+    for i in range(data.num_of_requests):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
             acc_count += 1
@@ -155,7 +155,7 @@ def main(data_from_cplex):
         average_delay = total_delay / acc_count
     else:
         average_delay = 0
-    acc_rate = acc_count / data.number_of_requests
+    acc_rate = acc_count / data.num_of_requests
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost,

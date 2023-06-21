@@ -59,7 +59,6 @@ def sort_requests(request_needed_cpu, data):
         key= lambda request : request_value[data.F_i.index(request)],
         reverse=True
     )
-    
     return sorted_requests
 
 def calculate_two_phase_length_of_nodes(pre_node, r_index, data):
@@ -90,22 +89,24 @@ def sort_nodes(rest_cpu_v, r_index, vnf_type, buffer_request_assign_node, data):
             / ((two_phases_len[i] - min_tpl + 1)/ (max_tpl - min_tpl + 1))
         )
     sorted_nodes = sorted(data.nodes, key= lambda node : node_value[node], reverse=True)
-    
     return sorted_nodes
 
 def main(data_from_cplex):
     data = data_from_cplex
-    if_considered_to_placed = [False for i in range(data.number_of_requests)]
+    if_considered_to_placed = [False for i in range(data.num_of_requests)]
     total_delay = 0
     start_time = time.time()
 
     # Initialize decision variables
-    buffer_z = [0] * data.number_of_requests # z
-    vnf_on_node = [[] for i in range(data.number_of_nodes)] # y
-    request_assign_node = [[] for i in range(data.number_of_requests)] # x
-    for i in range(data.number_of_requests):
-        for j in range(data.number_of_VNF_types):
-            request_assign_node[i].append(-2)
+    buffer_z = [0] * data.num_of_requests # z
+    vnf_on_node = [[] for i in range(data.num_of_nodes)] # y
+    request_assign_node = [[] for i in range(data.num_of_requests)] # x
+    for i in range(data.num_of_requests):
+        for j in range(data.num_of_VNF_types):
+            if j in data.F_i[i]:
+                request_assign_node[i].append(-1)
+            else:
+                request_assign_node[i].append(-2)
     
     request_needed_cpu = calculate_requests_needed_cpu(data)
     sorted_requests = sort_requests(request_needed_cpu, data)
@@ -177,12 +178,12 @@ def main(data_from_cplex):
     time_cost = end_time - start_time
 
     greedy_solution = []
-    for i in range(data.number_of_requests):
+    for i in range(data.num_of_requests):
         greedy_solution.extend(request_assign_node[i])
 
     total_profit = 0
     acc_count = 0
-    for i in range(data.number_of_requests):
+    for i in range(data.num_of_requests):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
             acc_count += 1
@@ -191,7 +192,7 @@ def main(data_from_cplex):
         average_delay = total_delay / acc_count
     else:
         average_delay = 0
-    acc_rate = acc_count / data.number_of_requests
+    acc_rate = acc_count / data.num_of_requests
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost,

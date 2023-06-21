@@ -6,72 +6,75 @@ def find_new_solution(improved_greedy_sol, data, seed):
     available_nodes = []
     overload_nodes = []
     new_sol = deepcopy(improved_greedy_sol)
-    random.seed(seed)
-    r_index = random.randint(0, data.number_of_requests - 1)
-    random.seed(seed)
-    tmp = random.sample(data.F_i[r_index], k=1)
-    vnf_type = tmp[0]
-    start = data.number_of_VNF_types * r_index
-    mut_loc = start + vnf_type
-    muted_node = new_sol[mut_loc]
     while True:
         random.seed(seed)
-        rn = random.randint(-1, data.number_of_nodes - 1)
-        if rn != new_sol[mut_loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
-            new_sol[mut_loc] = rn
+        loc = random.randint(0, len(new_sol) - 1)
+        if new_sol[loc] != -2:
+            r_index = loc // data.num_of_VNF_types
+            vnf_type = loc % data.num_of_VNF_types
+            break
+        seed += 1
+    while True:
+        random.seed(seed)
+        rn = random.randint(-1, data.num_of_nodes - 1)
+        if rn != new_sol[loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
+            new_sol[loc] = rn
             break
         seed += 1
     overload_nodes = check_capacity(new_sol, data)
     flag = True
     loop_count = 0
     while overload_nodes != []:
-        for node in overload_nodes:
+        for n in overload_nodes:
             candidates = []
             for i in range(len(new_sol)):
-                if new_sol[i] == node:
+                if new_sol[i] == n[0]:
                     candidates.append(i)
             random.seed(seed)
-            tmp = random.sample(candidates, k=1)
-            loc = tmp[0]
-            vnf_type = loc % data.number_of_VNF_types
-            available_nodes = find_available_nodes(new_sol, vnf_type, muted_node, data)
+            buffer = random.sample(candidates, k=1)
+            cand = buffer[0]
+            vnf_type = cand % data.num_of_VNF_types
+            available_nodes = find_available_nodes(new_sol, vnf_type, data)
             if len(available_nodes) > 0:
                 random.seed(seed)
                 buffer = random.sample(available_nodes, k=1)
-                new_sol[loc] = buffer[0]
+                new_sol[cand] = buffer[0]
             else:
                 random.seed(seed)
                 buffer = random.sample(data.nodes, k=1)
-                new_sol[loc] = buffer[0]
-            overload_nodes = check_capacity(new_sol, data)
-            seed += 1
+                new_sol[cand] = buffer[0]
+        overload_nodes = check_capacity(new_sol, data)
+        seed += 1
         loop_count += 1
-        if loop_count >= 1000:
+        if loop_count >= 50:
             flag = False
             break
     return new_sol, flag
 
-def find_available_nodes(new_sol, v_type, muted_node, data):
+def find_available_nodes(new_sol, v_type, data):
     available_nodes = []
     for i in data.nodes:
-        vnf_types = [0] * data.number_of_VNF_types
+        vnf_types = [0] * data.num_of_VNF_types
         mem_count = 0
         for j in range(len(new_sol)):
             if new_sol[j] == i:
-                tmp = j % data.number_of_VNF_types
+                tmp = j % data.num_of_VNF_types
                 vnf_types[tmp] = 1
         for j in range(len(vnf_types)):
             if vnf_types[j] == 1:
                 mem_count += 1
-        if mem_count < data.mem_v[i]: # Memory constraint
-            cpu_count = 0
-            for j in range(len(new_sol)):
-                if new_sol[j] == i:
-                    vnf_type = j % data.number_of_VNF_types
-                    cpu_count += data.cpu_f[vnf_type]
-            if (data.cpu_v[i] - cpu_count) > data.cpu_f[v_type]: # CPU constraint
-                if i != muted_node:
-                    available_nodes.append(i)
+        cpu_count = 0
+        for j in range(len(new_sol)):
+            if new_sol[j] == i:
+                tmp = j % data.num_of_VNF_types
+                cpu_count += data.cpu_f[tmp]
+        diff_cpu = data.cpu_v[i] - cpu_count
+        if vnf_types[v_type] == 1:
+            if diff_cpu > data.cpu_f[v_type]: # CPU constraint
+                available_nodes.append(i)
+        else:
+            if mem_count < data.mem_v[i] and diff_cpu > data.cpu_f[v_type]: # Mem and CPU constraint
+                available_nodes.append(i)
     return available_nodes
 
 def check_if_meet_delay_requirement(request, i, data):
@@ -99,27 +102,28 @@ def check_if_meet_delay_requirement(request, i, data):
 
 def check_capacity(new_sol, data):
     overload_nodes = []
-    
     for i in data.nodes:
-        vnf_types = [0] * data.number_of_VNF_types
+        vnf_types = [0] * data.num_of_VNF_types
         mem_count = 0
         for j in range(len(new_sol)):
             if new_sol[j] == i:
-                tmp = j % data.number_of_VNF_types
+                tmp = j % data.num_of_VNF_types
                 vnf_types[tmp] = 1
         for j in range(len(vnf_types)):
             if vnf_types[j] == 1:
                 mem_count += 1
-        if mem_count > data.mem_v[i]: # Memory constraint
-            overload_nodes.append(i)
-        else:
-            cpu_count = 0
-            for j in range(len(new_sol)):
-                if new_sol[j] == i:
-                    vnf_type = j % data.number_of_VNF_types
-                    cpu_count += data.cpu_f[vnf_type]
-            if cpu_count > data.cpu_v[i]: # CPU constraint
-                overload_nodes.append(i)
+        cpu_count = 0
+        for j in range(len(new_sol)):
+            if new_sol[j] == i:
+                vnf_type = j % data.num_of_VNF_types
+                cpu_count += data.cpu_f[vnf_type]
+        if mem_count > data.mem_v[i]:
+            if cpu_count > data.cpu_v[i]:
+                overload_nodes.append((i, mem_count - data.mem_v[i], cpu_count - data.cpu_v[i]))
+            else:
+                overload_nodes.append((i, mem_count - data.mem_v[i], 0))
+        elif cpu_count > data.cpu_v[i]:
+            overload_nodes.append((i, 0, cpu_count - data.cpu_v[i]))
         
     return overload_nodes
 
@@ -127,9 +131,9 @@ def check_acception(new_sol, data):
     start = -1
     last = -1
     acception = []
-    for i in range(data.number_of_requests):
-        start = data.number_of_VNF_types * i
-        end = start + data.number_of_VNF_types
+    for i in range(data.num_of_requests):
+        start = data.num_of_VNF_types * i
+        end = start + data.num_of_VNF_types
         count = 0
 
         j = start
@@ -158,8 +162,8 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
 
     current_sol = deepcopy(improved_greedy_sol)
     new_sol = []
-    current_temperature = 1
-    final_temperature = 0.0000001
+    current_temperature = 1000
+    final_temperature = 0.0001
     cooling_rate = 0.99
     diff = 0
     prob = 0
@@ -171,7 +175,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
         if flag:
             acception = check_acception(new_sol, data)
             profit = 0
-            for i in range(data.number_of_requests):
+            for i in range(data.num_of_requests):
                 if acception[i]:
                     profit += data.profit_i[i]
             if profit >= current_best_res:
@@ -201,7 +205,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     for i in range(len(acception)):
         if acception[i]:
             acc_count += 1
-    acc_rate = acc_count / data.number_of_requests
+    acc_rate = acc_count / data.num_of_requests
 
     res = {
         "total_profit": total_profit,
