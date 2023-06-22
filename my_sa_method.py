@@ -154,6 +154,33 @@ def check_acception(new_sol, data):
             acception.append(False)
     return acception
 
+def find_delay_time(sol, data):
+    delay_times = []
+    for i in range(data.num_of_requests):
+        start = i * data.num_of_VNF_types
+        end = start + data.num_of_VNF_types
+        request = sol[start:end]
+        if -1 in request:
+            delay_times.append(False)
+        else:
+            tau_vnf_i = 0
+            tau_i = 0
+            first_vnf = -1
+            last_vnf = -1
+            for vnf_1 in data.F_i[i]:
+                for vnf_2 in data.F_i[i]:
+                    if settings.check_are_neighbors(vnf_1, vnf_2, data.F_i[i]):
+                        tau_vnf_i += settings.v2v_shortest_path_length(data.G, request[vnf_1], request[vnf_2])
+                    if settings.check_is_first_vnf(vnf_1, data.F_i[i]):
+                        first_vnf = vnf_1
+                    if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
+                        last_vnf = vnf_1
+            tau_i += tau_vnf_i
+            tau_i += settings.v2v_shortest_path_length(data.G, data.s_i[i], request[first_vnf])
+            tau_i += settings.v2v_shortest_path_length(data.G, data.e_i[i], request[last_vnf])
+            delay_times.append(tau_i)
+    return delay_times
+
 def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     data = data_from_cplex
     seed = 1
@@ -204,8 +231,8 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     vnf_on_node = [[] for i in range(data.num_of_nodes)]
     vnf_used_count = [0 for i in range(data.num_of_VNF_types)]
     for i in data.nodes:
-        for j in range(len(new_sol)):
-            if new_sol[j] == i:
+        for j in range(len(current_sol)):
+            if current_sol[j] == i:
                 vnf_type = j % data.num_of_VNF_types
                 vnf_on_node[i].append(vnf_type)
     for i in data.nodes:
@@ -229,12 +256,15 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     else:
         ratio_of_vnf_shared = 0
 
-    acception = check_acception(new_sol, data)
+    acception = check_acception(current_sol, data)
     acc_count = 0
     for i in range(len(acception)):
         if acception[i]:
             acc_count += 1
     acc_rate = acc_count / data.num_of_requests
+
+    delay_times = find_delay_time(current_sol, data)
+    print("delay_times: ", delay_times)
 
     res = {
         "total_profit": total_profit,

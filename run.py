@@ -12,11 +12,11 @@ if __name__ == "__main__":
     # # seeds = []
     # while itt <= seed_upper_bound:
     # number_of_requests = [12]
-    number_of_requests = [4,6,8,10,12]
-    number_of_VNF_types = [5]
+    number_of_requests = [30,60,90,120,150]
+    number_of_VNF_types = [20]
     # number_of_VNF_types = [6,7,8,9,10]
     # number_of_nodes = [12,13,14,15,16]
-    number_of_nodes = [16]
+    number_of_nodes = [200]
     number_of_iteration = 1
     # seed = datetime.datetime.now().timestamp()
     # seed = itt
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         mean_sa_average_ratio_of_vnf_shared = 0
 
         # average_request_values = []
-        seeds = [1382, 1260, 3642, 34, 1414, 1805, 811, 2934, 66, 4702, 3206, 459, 1586, 103, 3608, 2240, 2496]
+        seeds = [1]
         for seed in seeds:
             print("number of request: ", number_of_requests[nr])
             print("seed: ", seed)

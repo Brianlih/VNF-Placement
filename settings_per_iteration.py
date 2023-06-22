@@ -5,9 +5,9 @@ def init(number_of_requests, number_of_VNF_types, number_of_nodes, seed):
     global F_i, profit_i, r_i, s_i, e_i
 
     lower_bound_of_F_i = 1
-    upper_bound_of_F_i = 3
-    lower_bound_of_r_i = 10
-    upper_bound_of_r_i = 30
+    upper_bound_of_F_i = 10
+    lower_bound_of_r_i = 40
+    upper_bound_of_r_i = 70
 
     s = seed
     F_i = []
