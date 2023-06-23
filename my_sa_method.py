@@ -194,7 +194,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     cooling_rate = 0.99
     diff = 0
     prob = 0
-    current_best_res = improved_greedy_res
+    current_res = improved_greedy_res
 
     while current_temperature > final_temperature:
         # print("current_temperature:",  current_temperature)
@@ -205,15 +205,15 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
             for i in range(data.num_of_requests):
                 if acception[i]:
                     profit += data.profit_i[i]
-            if profit >= current_best_res:
-                current_best_res = profit
+            if profit >= current_res:
+                current_res = profit
                 current_sol = new_sol
             else:
-                diff = profit - current_best_res
+                diff = profit - current_res
                 prob = math.exp(diff / current_temperature)
                 random.seed(seed)
                 if random.uniform(0, 1) < prob:
-                    current_best_res = profit
+                    current_res = profit
                     current_sol = new_sol
             current_temperature *= cooling_rate
         seed += 1
@@ -222,8 +222,8 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     time_cost = end_time - start_time
 
     total_profit = 0
-    if current_best_res > improved_greedy_res:
-        total_profit = current_best_res
+    if current_res > improved_greedy_res:
+        total_profit = current_res
     else:
         total_profit = improved_greedy_res
         current_sol = improved_greedy_sol
@@ -263,7 +263,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost,
-        # "solution": greedy_solution,
+        # "solution": current_sol,
         "acc_rate": acc_rate,
         # "average_delay": average_delay,
         "ratio_of_vnf_shared": ratio_of_vnf_shared
