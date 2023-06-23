@@ -121,7 +121,7 @@ if __name__ == "__main__":
             print("number of request: ", number_of_requests[nr])
             print("seed: ", seed)
             # Initialize the input data
-            pre_settings.init(seed, run_time, number_of_nodes[0])
+            pre_settings.init(seed, run_time, number_of_nodes[0], number_of_VNF_types[0])
             # Initialize the input data
             settings.init(number_of_requests[nr], number_of_VNF_types[0], seed)
             # Initialize the input data for each iteration
@@ -245,7 +245,11 @@ if __name__ == "__main__":
                 VNF_placement_model.add_constraint(occupied_mem_resources <= pre_settings.mem_v[v])
 
             # Defineing the objective function
-            obj_fn = sum(z[i] * settings_per_iteration.profit_i[i] for i in range(number_of_requests[nr]))
+            deployment_cost = 0
+            for v in range(number_of_nodes[0]):
+                for f in range(number_of_VNF_types[0]):
+                    deployment_cost += y[f, v] * pre_settings.cost_f[f]
+            obj_fn = sum(z[i] * settings_per_iteration.profit_i[i] for i in range(number_of_requests[nr])) - deployment_cost
             print(VNF_placement_model.print_information())
             VNF_placement_model.set_objective('max', obj_fn)
 
