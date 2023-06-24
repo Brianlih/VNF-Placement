@@ -1,6 +1,6 @@
 import time
 from copy import deepcopy
-import settings
+import settings, pre_settings
 
 def check_if_meet_delay_requirement(request_assign_node, i, data):
     tau_vnf_i = 0
@@ -201,7 +201,10 @@ def main(data_from_cplex):
                         if count > 1:
                             shared_count += 1
                             break
-    ratio_of_vnf_shared = shared_count / vnf_count
+    if vnf_count > 0:
+        ratio_of_vnf_shared = shared_count / vnf_count
+    else:
+        ratio_of_vnf_shared = 0
 
     total_profit = 0
     acc_count = 0
@@ -209,6 +212,7 @@ def main(data_from_cplex):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
             acc_count += 1
+    total_profit -= vnf_count * pre_settings.cost_f
     average_delay = 0
     if acc_count > 0:
         average_delay = total_delay / acc_count

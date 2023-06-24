@@ -31,7 +31,7 @@ def construct_test_topo(filename_topo):
     return Graph
 
 def init(seed, run_time, number_of_nodes, number_of_VNF_types):
-    global G, nodes, cpu_v, mem_v, lower_bound_of_pi_wv, upper_bound_of_pi_wv
+    global G, nodes, cpu_v, mem_v, lower_bound_of_pi_wv, upper_bound_of_pi_wv, cost_f
     if run_time != 0:
         lower_bound_of_cpu_v = 8
         upper_bound_of_cpu_v = 16
@@ -39,8 +39,6 @@ def init(seed, run_time, number_of_nodes, number_of_VNF_types):
         upper_bound_of_mem_v = 4
         lower_bound_of_pi_wv = 1
         upper_bound_of_pi_wv = 10
-        lower_bound_of_cost_f = 0.01
-        upper_bound_of_cost_f = 0.01
 
         number_of_topo = 100
         # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
@@ -74,10 +72,4 @@ def init(seed, run_time, number_of_nodes, number_of_VNF_types):
             s += 1
         # print("mem_v = ", mem_v)
 
-        s = seed
-        cost_f = []
-        for i in range(number_of_VNF_types):
-            random.seed(s)
-            cost_f.append(random.randint(lower_bound_of_cost_f, upper_bound_of_cost_f))
-            s += 1
-        # print("cost_f = ", cost_f)
+        cost_f = 0.01

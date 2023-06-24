@@ -1,6 +1,6 @@
 import random, time, math
 from copy import deepcopy
-import settings
+import settings, pre_settings
 
 def find_new_solution(improved_greedy_sol, data, seed):
     available_nodes = []
@@ -248,8 +248,12 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
                         if count > 1:
                             shared_count += 1
                             break
-    ratio_of_vnf_shared = shared_count / vnf_count
+    if vnf_count > 0:
+        ratio_of_vnf_shared = shared_count / vnf_count
+    else:
+        ratio_of_vnf_shared = 0
 
+    total_profit -= vnf_count * pre_settings.cost_f
     acception = check_acception(current_sol, data)
     acc_count = 0
     for i in range(len(acception)):
@@ -258,7 +262,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     acc_rate = acc_count / data.num_of_requests
 
     delay_times = find_delay_time(current_sol, data)
-    print("delay_times: ", delay_times)
+    # print("delay_times: ", delay_times)
 
     res = {
         "total_profit": total_profit,
