@@ -6,32 +6,27 @@ import settings, pre_settings
 def check_if_meet_delay_requirement(request_assign_node, i, data):
     tau_vnf_i = 0
     tau_i = 0
-    first_vnf = -1
-    last_vnf = -1
-    for vnf_1 in data.F_i[i]:
-        for vnf_2 in data.F_i[i]:
-            if settings.check_are_neighbors(vnf_1, vnf_2, data.F_i[i]):
-                tau_vnf_i += settings.v2v_shortest_path_length(
-                    data.G,
-                    request_assign_node[i][vnf_1],
-                    request_assign_node[i][vnf_2])
-            if settings.check_is_first_vnf(vnf_1, data.F_i[i]):
-                first_vnf = vnf_1
-            if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
-                last_vnf = vnf_1
+    first_vnf = data.F_i[i][0]
+    last_vnf = data.F_i[i][-1]
+    if len(data.F_i[i]) == 1:
+        tau_vnf_i = 0
+    else:
+        for j in range(len(data.F_i[i]) - 1):
+            k = j + 1
+            tau_vnf_i += settings.v2v_shortest_path_length(
+                data.G,
+                request_assign_node[i][data.F_i[i][j]],
+                request_assign_node[i][data.F_i[i][k]])
+
     tau_i += tau_vnf_i
-    if request_assign_node[i][first_vnf] != data.s_i[i]:
-        tau_i += settings.v2v_shortest_path_length(
-            data.G,
-            data.s_i[i],
-            request_assign_node[i][first_vnf]
-        )
-    if request_assign_node[i][last_vnf] != data.e_i[i]:
-        tau_i += settings.v2v_shortest_path_length(
-            data.G,
-            data.e_i[i],
-            request_assign_node[i][last_vnf]
-        )
+    tau_i += settings.v2v_shortest_path_length(
+        data.G,
+        data.s_i[i],
+        request_assign_node[i][first_vnf])
+    tau_i += settings.v2v_shortest_path_length(
+        data.G,
+        data.e_i[i],
+        request_assign_node[i][last_vnf])
         
     if tau_i <= data.r_i[i]:
         return True, tau_i

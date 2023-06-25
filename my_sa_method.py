@@ -47,6 +47,7 @@ def find_new_solution(improved_greedy_sol, data, seed):
         seed += 1
         loop_count += 1
         if loop_count >= 50:
+            print("Infisible")
             flag = False
             break
     return new_sol, flag
@@ -82,16 +83,17 @@ def check_if_meet_delay_requirement(request, i, data):
         return False
     tau_vnf_i = 0
     tau_i = 0
-    first_vnf = -1
-    last_vnf = -1
-    for vnf_1 in data.F_i[i]:
-        for vnf_2 in data.F_i[i]:
-            if settings.check_are_neighbors(vnf_1, vnf_2, data.F_i[i]):
-                tau_vnf_i += settings.v2v_shortest_path_length(data.G, request[vnf_1], request[vnf_2])
-            if settings.check_is_first_vnf(vnf_1, data.F_i[i]):
-                first_vnf = vnf_1
-            if settings.check_is_last_vnf(vnf_1, data.F_i[i]):
-                last_vnf = vnf_1
+    first_vnf = data.F_i[i][0]
+    last_vnf = data.F_i[i][-1]
+    if len(data.F_i[i]) == 1:
+        tau_vnf_i = 0
+    else:
+        for j in range(len(data.F_i[i]) - 1):
+            k = j + 1
+            tau_vnf_i += settings.v2v_shortest_path_length(
+                data.G,
+                request[data.F_i[i][j]],
+                request[data.F_i[i][k]])
     tau_i += tau_vnf_i
     tau_i += settings.v2v_shortest_path_length(data.G, data.s_i[i], request[first_vnf])
     tau_i += settings.v2v_shortest_path_length(data.G, data.e_i[i], request[last_vnf])
@@ -129,19 +131,12 @@ def check_capacity(new_sol, data):
 
 def check_acception(new_sol, data):
     start = -1
-    last = -1
+    end = -1
     acception = []
     for i in range(data.num_of_requests):
         start = data.num_of_VNF_types * i
         end = start + data.num_of_VNF_types
-        count = 0
-
-        j = start
-        while j < end:
-            if new_sol[j] != -2 and new_sol[j] != -1:
-                count += 1
-            j += 1
-        if count < len(data.F_i[i]):
+        if -1 in new_sol[start:end]:
             acception.append(False)
         elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
             acception.append(True)
@@ -221,12 +216,12 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     end_time = time.time()
     time_cost = end_time - start_time
 
-    total_profit = 0
-    if current_res > improved_greedy_res:
-        total_profit = current_res
-    else:
-        total_profit = improved_greedy_res
-        current_sol = improved_greedy_sol
+    # total_profit = 0
+    # if current_res > improved_greedy_res:
+    #     total_profit = current_res
+    # else:
+    #     total_profit = improved_greedy_res
+    #     current_sol = improved_greedy_sol
 
     vnf_on_node = [[] for i in range(data.num_of_nodes)]
     for i in data.nodes:
@@ -253,7 +248,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     else:
         ratio_of_vnf_shared = 0
 
-    total_profit -= vnf_count * pre_settings.cost_f
+    current_res -= vnf_count * pre_settings.cost_f
     acception = check_acception(current_sol, data)
     acc_count = 0
     for i in range(len(acception)):
@@ -261,11 +256,11 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
             acc_count += 1
     acc_rate = acc_count / data.num_of_requests
 
-    delay_times = find_delay_time(current_sol, data)
+    # delay_times = find_delay_time(current_sol, data)
     # print("delay_times: ", delay_times)
 
     res = {
-        "total_profit": total_profit,
+        "total_profit": current_res,
         "time_cost": time_cost,
         # "solution": current_sol,
         "acc_rate": acc_rate,
