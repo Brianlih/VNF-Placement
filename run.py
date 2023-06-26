@@ -344,7 +344,7 @@ if __name__ == "__main__":
             # print("Improved Greedy started!")
             improved_greedy_res = improved_greedy.main(Data)
             # print("SA started!")
-            sa_res = my_sa_method.main(Data, improved_greedy_res["solution"], improved_greedy_res["total_profit"])
+            sa_res = my_sa_method.main(Data, improved_greedy_res["solution"], improved_greedy_res["total_profit"], seed)
 
             # results
             # mean_cplex_res_value += cplex_res

@@ -176,9 +176,9 @@ def find_delay_time(sol, data):
             delay_times.append(tau_i)
     return delay_times
 
-def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
+def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     data = data_from_cplex
-    seed = 1
+    seed = s
     # print("seed:", seed)
     start_time = time.time()
 
