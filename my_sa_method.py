@@ -47,7 +47,7 @@ def find_new_solution(improved_greedy_sol, data, seed):
         seed += 1
         loop_count += 1
         if loop_count >= 50:
-            print("Infisible")
+            # print("Infisible")
             flag = False
             break
     return new_sol, flag
@@ -178,7 +178,7 @@ def find_delay_time(sol, data):
 
 def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     data = data_from_cplex
-    seed = s
+    seed = 1
     # print("seed:", seed)
     start_time = time.time()
 

@@ -40,7 +40,7 @@ def init(seed, run_time, number_of_nodes, number_of_VNF_types):
         lower_bound_of_pi_wv = 1
         upper_bound_of_pi_wv = 10
 
-        number_of_topo = 99
+        number_of_topo = 100
         # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
         G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
         # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)

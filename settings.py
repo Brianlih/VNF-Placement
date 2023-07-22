@@ -32,7 +32,7 @@ def init(number_of_requests, number_of_VNF_types, seed):
     M = 1000000
 
     lower_bound_of_eta_f = 1
-    upper_bound_of_eta_f = 1
+    upper_bound_of_eta_f = 2
     lower_bound_of_cpu_f = 1
     upper_bound_of_cpu_f = 7
 
