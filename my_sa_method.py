@@ -127,26 +127,27 @@ def check_capacity(new_sol, node, data):
     return overload_node
 
 def check_acception(new_sol, ir, acception, data):
-    # if None in acception:
-    for i in range(data.num_of_requests):
-        start = data.num_of_VNF_types * i
+    acc = deepcopy(acception)
+    if None in acc:
+        for i in range(data.num_of_requests):
+            start = data.num_of_VNF_types * i
+            end = start + data.num_of_VNF_types
+            if -1 in new_sol[start:end]:
+                acc[i] = False
+            elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
+                acc[i] = True
+            else:
+                acc[i] = False
+    else:
+        start = data.num_of_VNF_types * ir
         end = start + data.num_of_VNF_types
         if -1 in new_sol[start:end]:
-            acception[i] = False
-        elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
-            acception[i] = True
+            acc[ir] = False
+        elif check_if_meet_delay_requirement(new_sol[start:end], ir, data):
+            acc[ir] = True
         else:
-            acception[i] = False
-    # else:
-    #     start = data.num_of_VNF_types * ir
-    #     end = start + data.num_of_VNF_types
-    #     if -1 in new_sol[start:end]:
-    #         acception[ir] = False
-    #     elif check_if_meet_delay_requirement(new_sol[start:end], ir, data):
-    #         acception[ir] = True
-    #     else:
-    #         acception[ir] = False
-    return acception
+            acc[ir] = False
+    return acc
 
 # def find_delay_time(sol, data):
 #     delay_times = []
@@ -190,7 +191,8 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     diff = 0
     prob = 0
     current_res = improved_greedy_res
-    acception = [None for i in range(data.num_of_requests)]
+    current_acception = [None for i in range(data.num_of_requests)]
+    new_acception = [None for i in range(data.num_of_requests)]
     best_res = 0
     same_res_count = 0
     res_arr = []
@@ -201,16 +203,17 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
         # print("current_temperature:",  current_temperature)
         new_sol, ir, flag = find_new_solution(current_sol, data, seed)
         if flag:
-            acception = check_acception(new_sol, ir, acception, data)
+            new_acception = check_acception(new_sol, ir, current_acception, data)
             profit = 0
             for i in range(data.num_of_requests):
-                if acception[i]:
+                if new_acception[i]:
                     profit += data.profit_i[i]
             if profit >= current_res:
                 if profit > best_res:
                     best_res = profit
                 current_res = profit
                 current_sol = new_sol
+                current_acception = new_acception
             else:
                 diff = profit - current_res
                 prob = math.exp(diff / current_temperature)
@@ -218,6 +221,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
                 if random.uniform(0, 1) < prob:
                     current_res = profit
                     current_sol = new_sol
+                    current_acception = new_acception
             res_arr.append(current_res)
             best_arr.append(best_res)
             current_temperature *= cooling_rate
@@ -261,8 +265,8 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     # current_res -= vnf_count * pre_settings.cost_f
     # acception = check_acception(current_sol, data)
     acc_count = 0
-    for i in range(len(acception)):
-        if acception[i]:
+    for i in range(len(current_acception)):
+        if current_acception[i]:
             acc_count += 1
     acc_rate = acc_count / data.num_of_requests
 
