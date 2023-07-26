@@ -175,7 +175,7 @@ def main(data_from_cplex):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
             acc_count += 1
-    total_profit -= vnf_count * pre_settings.cost_f
+    # total_profit -= vnf_count * pre_settings.cost_f
     average_delay = 0
     if acc_count > 0:
         average_delay = total_delay / acc_count
