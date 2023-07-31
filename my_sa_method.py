@@ -31,7 +31,7 @@ def find_new_solution(current_sol, data, seed):
     overload_node = check_capacity(new_sol, rn, data)
     flag = True
     loop_count = 0
-    while overload_node != -1:
+    if overload_node != -1:
         set1 = set(have_been_considered)
         available_nodes = find_available_nodes(new_sol, vnf_type, data)
         set2 = set(available_nodes)
@@ -40,18 +40,21 @@ def find_new_solution(current_sol, data, seed):
             random.seed(seed)
             buffer = random.sample(ava_nodes, k=1)
             new_sol[loc] = buffer[0]
+            # overload_node = check_capacity(new_sol, new_sol[loc], data)
         else:
-            random.seed(seed)
-            buffer = random.sample(data.nodes, k=1)
-            new_sol[loc] = buffer[0]
-            have_been_considered.append(buffer[0])
-        overload_node = check_capacity(new_sol, new_sol[loc], data)
-        seed += 1
-        loop_count += 1
-        if loop_count >= 50:
-            # print("Infisible")
             flag = False
-            break
+            # print("Infisible")
+        # else:
+        #     random.seed(seed)
+        #     buffer = random.sample(data.nodes, k=1)
+        #     new_sol[loc] = buffer[0]
+        #     have_been_considered.append(buffer[0])
+        seed += 1
+        # loop_count += 1
+        # if loop_count >= 50:
+        #     # print("Infisible")
+        #     flag = False
+        #     break
     return new_sol, r_index, flag
 
 def find_available_nodes(new_sol, v_type, data):
@@ -198,8 +201,8 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     res_arr = []
     best_arr = []
 
-    while it_count < 3001:
-        it_count += 1
+    while same_res_count <= 10000:
+        # it_count += 1
         # print("current_temperature:",  current_temperature)
         new_sol, ir, flag = find_new_solution(current_sol, data, seed)
         if flag:
@@ -214,6 +217,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
                 current_res = profit
                 current_sol = new_sol
                 current_acception = new_acception
+                same_res_count = 0
             else:
                 diff = profit - current_res
                 prob = math.exp(diff / current_temperature)
@@ -222,6 +226,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
                     current_res = profit
                     current_sol = new_sol
                     current_acception = new_acception
+                same_res_count += 1
             res_arr.append(current_res)
             best_arr.append(best_res)
             current_temperature *= cooling_rate
