@@ -3,11 +3,10 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed):
+def construct_topo(filename_topo, lower_bound_of_pi_wv, upper_bound_of_pi_wv):
     nodes_firstColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(1))
     nodes_secondColumn = np.genfromtxt(filename_topo, dtype="int", usecols=(2))
     quantity_nodes = max(np.amax(nodes_firstColumn), np.amax(nodes_secondColumn)) + 1
-    random.seed(seed)
     edge_weights = [random.randint(lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         for i in range(len(nodes_firstColumn))]
     # print("edge_weights = ", edge_weights)
@@ -30,7 +29,7 @@ def construct_test_topo(filename_topo):
         Graph.add_edge(i, i, weight=0)
     return Graph
 
-def init(seed, run_time, number_of_nodes, number_of_VNF_types):
+def init(run_time, number_of_nodes, number_of_VNF_types):
     global G, nodes, cpu_v, mem_v, lower_bound_of_pi_wv, upper_bound_of_pi_wv, cost_f
     if run_time != 0:
         lower_bound_of_cpu_v = 8
@@ -42,10 +41,10 @@ def init(seed, run_time, number_of_nodes, number_of_VNF_types):
 
         number_of_topo = 99
         # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
-        G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-        # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-        # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
-        # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv, seed)
+        G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
+        # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
+        # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
+        # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         # nx.draw_networkx(G)
         # plt.show()
         # print("number_of_nodes = ", number_of_nodes)
@@ -56,20 +55,14 @@ def init(seed, run_time, number_of_nodes, number_of_VNF_types):
             nodes.append(i)
         # print("nodes = ", nodes)
 
-        s = seed
         cpu_v = []
         for i in range(number_of_nodes):
-            random.seed(s)
             cpu_v.append(random.randint(lower_bound_of_cpu_v, upper_bound_of_cpu_v))
-            s += 1
         # print("cpu_v = ", cpu_v)
 
-        s = seed
         mem_v = []
         for i in range(number_of_nodes):
-            random.seed(s)
             mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
-            s += 1
         # print("mem_v = ", mem_v)
 
         cost_f = 0.01

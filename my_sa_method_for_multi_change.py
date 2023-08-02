@@ -3,52 +3,58 @@ from copy import deepcopy
 import settings, pre_settings
 
 def find_new_solution(current_sol, data):
+    changed_ratio = [0.1, 0.08, 0.06, 0.04, 0.02]
+    change_locs = []
     available_nodes = []
-    have_been_considered = []
-    overload_node = -1
+    overload_nodes = []
     rn = -1
     new_sol = deepcopy(current_sol)
     vnf_type = -1
     r_index = -1
     loc = -1
-    while True:
-        loc = random.randint(0, len(new_sol) - 1)
-        if new_sol[loc] != -2:
-            r_index = loc // data.num_of_VNF_types
-            vnf_type = loc % data.num_of_VNF_types
-            break
-    have_been_considered.append(new_sol[loc])
-    while True:
-        rn = random.randint(-1, data.num_of_nodes - 1)
-        if rn != new_sol[loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
-            new_sol[loc] = rn
-            break
-    have_been_considered.append(rn)
-    overload_node = check_capacity(new_sol, rn, data)
+
+    buffer = random.sample(changed_ratio, k=1)
+    cr = buffer[0]
+    required_length = data.num_of_requests * data.num_of_VNF_types * cr
+    while len(change_locs) < required_length:
+        while True:
+            loc = random.randint(0, len(new_sol) - 1)
+            if new_sol[loc] != -2:
+                change_locs.append(loc)
+                r_index = loc // data.num_of_VNF_types
+                vnf_type = loc % data.num_of_VNF_types
+                break
+        while True:
+            rn = random.randint(-1, data.num_of_nodes - 1)
+            if rn != new_sol[loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
+                new_sol[loc] = rn
+                break
+    overload_nodes = check_capacity(new_sol, data)
     flag = True
     loop_count = 0
-    if overload_node != -1:
-        set1 = set(have_been_considered)
-        available_nodes = find_available_nodes(new_sol, vnf_type, data)
-        set2 = set(available_nodes)
-        ava_nodes = list(set2 - set1)
-        if len(ava_nodes) > 0:
-            buffer = random.sample(ava_nodes, k=1)
-            new_sol[loc] = buffer[0]
-            # overload_node = check_capacity(new_sol, new_sol[loc], data)
-        else:
-            flag = False
-            # print("Infisible")
-        # else:
-        #     buffer = random.sample(data.nodes, k=1)
-        #     new_sol[loc] = buffer[0]
-        #     have_been_considered.append(buffer[0])
-        # loop_count += 1
+    while overload_nodes != []:
+        for n in overload_nodes:
+            candidates = []
+            for i in range(len(new_sol)):
+                if new_sol[i] == n[0]:
+                    candidates.append(i)
+            buffer = random.sample(candidates, k=1)
+            cand = buffer[0]
+            vnf_type = cand % data.num_of_VNF_types
+            available_nodes = find_available_nodes(new_sol, vnf_type, data)
+            if len(available_nodes) > 0:
+                buffer = random.sample(available_nodes, k=1)
+                new_sol[cand] = buffer[0]
+            else:
+                buffer = random.sample(data.nodes, k=1)
+                new_sol[cand] = buffer[0]
+        overload_nodes = check_capacity(new_sol, data)
+        loop_count += 1
         # if loop_count >= 50:
         #     # print("Infisible")
         #     flag = False
         #     break
-    return new_sol, r_index, flag
+    return new_sol, flag
 
 def find_available_nodes(new_sol, v_type, data):
     available_nodes = []
@@ -100,52 +106,47 @@ def check_if_meet_delay_requirement(request, i, data):
         return True
     return False
 
-def check_capacity(new_sol, node, data):
-    overload_node = -1
-    vnf_types = [0] * data.num_of_VNF_types
-    mem_count = 0
-    for j in range(len(new_sol)):
-        if new_sol[j] == node:
-            tmp = j % data.num_of_VNF_types
-            vnf_types[tmp] = 1
-    for j in range(len(vnf_types)):
-        if vnf_types[j] == 1:
-            mem_count += 1
-    cpu_count = 0
-    for j in range(len(new_sol)):
-        if new_sol[j] == node:
-            vnf_type = j % data.num_of_VNF_types
-            cpu_count += data.cpu_f[vnf_type]
-
-    if mem_count > data.mem_v[node] or cpu_count > data.cpu_v[node]:
-        overload_node = node
-        
-    return overload_node
-
-def check_acception(new_sol, ir, acception, data):
-    acc = deepcopy(acception)
-    if None in acc:
-        for i in range(data.num_of_requests):
-            start = data.num_of_VNF_types * i
-            end = start + data.num_of_VNF_types
-            if -1 in new_sol[start:end]:
-                acc[i] = False
-            elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
-                acc[i] = True
+def check_capacity(new_sol, data):
+    overload_nodes = []
+    for i in data.nodes:
+        vnf_types = [0] * data.num_of_VNF_types
+        mem_count = 0
+        for j in range(len(new_sol)):
+            if new_sol[j] == i:
+                tmp = j % data.num_of_VNF_types
+                vnf_types[tmp] = 1
+        for j in range(len(vnf_types)):
+            if vnf_types[j] == 1:
+                mem_count += 1
+        cpu_count = 0
+        for j in range(len(new_sol)):
+            if new_sol[j] == i:
+                vnf_type = j % data.num_of_VNF_types
+                cpu_count += data.cpu_f[vnf_type]
+        if mem_count > data.mem_v[i]:
+            if cpu_count > data.cpu_v[i]:
+                overload_nodes.append((i, mem_count - data.mem_v[i], cpu_count - data.cpu_v[i]))
             else:
-                acc[i] = False
-    else:
-        start = data.num_of_VNF_types * ir
+                overload_nodes.append((i, mem_count - data.mem_v[i], 0))
+        elif cpu_count > data.cpu_v[i]:
+            overload_nodes.append((i, 0, cpu_count - data.cpu_v[i]))
+        
+    return overload_nodes
+
+def check_acception(new_sol, data):
+    acc = []
+    for i in range(data.num_of_requests):
+        start = data.num_of_VNF_types * i
         end = start + data.num_of_VNF_types
         if -1 in new_sol[start:end]:
-            acc[ir] = False
-        elif check_if_meet_delay_requirement(new_sol[start:end], ir, data):
-            acc[ir] = True
+            acc.append(False)
+        elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
+            acc.append(True)
         else:
-            acc[ir] = False
+            acc.append(False)
     return acc
 
-def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
+def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     it_count = 0
     fisible_count = 0
     infisible_count = 0
@@ -168,13 +169,13 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     res_arr = []
     best_arr = []
 
-    while it_count <= 7000:
+    while it_count <= 8000:
         # print("current_temperature:",  current_temperature)
-        new_sol, ir, flag = find_new_solution(current_sol, data)
+        new_sol, flag = find_new_solution(current_sol, data)
         if flag:
             it_count += 1
             fisible_count += 1
-            new_acception = check_acception(new_sol, ir, current_acception, data)
+            new_acception = check_acception(new_sol, data)
             profit = 0
             for i in range(data.num_of_requests):
                 if new_acception[i]:
