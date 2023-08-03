@@ -95,7 +95,7 @@ def main(arr):
         plt.plot(x, y, color='darkorange', label="VISA", markersize=8, linewidth=2.5)
 
         # plt.xticks(number_of_requests, [str(number_of_requests[i]) for i in range(len(number_of_requests))])
-        x_ticks_to_display = [x[i] for i in range(0, len(x), 1000)]
+        x_ticks_to_display = [x[i] for i in range(0, len(x), 50000)]
         plt.xticks(x_ticks_to_display)
         plt.xlabel('Iterations')
         plt.ylabel('Profit')

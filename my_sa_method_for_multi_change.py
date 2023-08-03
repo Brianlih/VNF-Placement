@@ -3,10 +3,12 @@ from copy import deepcopy
 import settings, pre_settings
 
 def find_new_solution(current_sol, data):
-    changed_ratio = [0.1, 0.08, 0.06, 0.04, 0.02]
+    changed_ratio = [0.5, 0.4, 0.3, 0.2, 0.1, 0.08, 0.06, 0.04, 0.02, 0.001]
     change_locs = []
     available_nodes = []
     overload_nodes = []
+    impacted_nodes = []
+    impacted_requests = []
     rn = -1
     new_sol = deepcopy(current_sol)
     vnf_type = -1
@@ -23,38 +25,49 @@ def find_new_solution(current_sol, data):
                 change_locs.append(loc)
                 r_index = loc // data.num_of_VNF_types
                 vnf_type = loc % data.num_of_VNF_types
+                impacted_requests.append(r_index)
                 break
         while True:
             rn = random.randint(-1, data.num_of_nodes - 1)
             if rn != new_sol[loc] and rn != data.s_i[r_index] and rn != data.e_i[r_index]:
                 new_sol[loc] = rn
+                if rn != -1:
+                    impacted_nodes.append(rn)
                 break
-    overload_nodes = check_capacity(new_sol, data)
+    impacted_nodes = list(set(impacted_nodes))
+    impacted_requests = set(impacted_requests)
+    overload_nodes = check_capacity(new_sol, impacted_nodes, data)
     flag = True
     loop_count = 0
     while overload_nodes != []:
         for n in overload_nodes:
             candidates = []
             for i in range(len(new_sol)):
-                if new_sol[i] == n[0]:
+                if new_sol[i] == n:
                     candidates.append(i)
             buffer = random.sample(candidates, k=1)
             cand = buffer[0]
+            r_index = cand // data.num_of_VNF_types
             vnf_type = cand % data.num_of_VNF_types
+            impacted_requests.add(r_index)
             available_nodes = find_available_nodes(new_sol, vnf_type, data)
             if len(available_nodes) > 0:
                 buffer = random.sample(available_nodes, k=1)
                 new_sol[cand] = buffer[0]
             else:
-                buffer = random.sample(data.nodes, k=1)
-                new_sol[cand] = buffer[0]
-        overload_nodes = check_capacity(new_sol, data)
+                rn = random.randint(-1, data.num_of_nodes - 1)
+                new_sol[cand] = rn
+                if rn != -1:
+                    impacted_nodes.append(rn)
+        impacted_nodes = list(set(impacted_nodes))
+        overload_nodes = check_capacity(new_sol, impacted_nodes, data)
         loop_count += 1
-        # if loop_count >= 50:
-        #     # print("Infisible")
-        #     flag = False
-        #     break
-    return new_sol, flag
+        if loop_count >= 50:
+            print("Infisible")
+            flag = False
+            break
+    impacted_requests = list(impacted_requests)
+    return new_sol, impacted_requests, flag
 
 def find_available_nodes(new_sol, v_type, data):
     available_nodes = []
@@ -106,9 +119,9 @@ def check_if_meet_delay_requirement(request, i, data):
         return True
     return False
 
-def check_capacity(new_sol, data):
+def check_capacity(new_sol, impacted_nodes, data):
     overload_nodes = []
-    for i in data.nodes:
+    for i in impacted_nodes:
         vnf_types = [0] * data.num_of_VNF_types
         mem_count = 0
         for j in range(len(new_sol)):
@@ -123,27 +136,34 @@ def check_capacity(new_sol, data):
             if new_sol[j] == i:
                 vnf_type = j % data.num_of_VNF_types
                 cpu_count += data.cpu_f[vnf_type]
-        if mem_count > data.mem_v[i]:
-            if cpu_count > data.cpu_v[i]:
-                overload_nodes.append((i, mem_count - data.mem_v[i], cpu_count - data.cpu_v[i]))
-            else:
-                overload_nodes.append((i, mem_count - data.mem_v[i], 0))
-        elif cpu_count > data.cpu_v[i]:
-            overload_nodes.append((i, 0, cpu_count - data.cpu_v[i]))
+        
+        if mem_count > data.mem_v[i] or cpu_count > data.cpu_v[i]:
+            overload_nodes.append(i)
         
     return overload_nodes
 
-def check_acception(new_sol, data):
-    acc = []
-    for i in range(data.num_of_requests):
-        start = data.num_of_VNF_types * i
-        end = start + data.num_of_VNF_types
-        if -1 in new_sol[start:end]:
-            acc.append(False)
-        elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
-            acc.append(True)
-        else:
-            acc.append(False)
+def check_acception(new_sol, impacted_requests, acception, data):
+    acc = deepcopy(acception)
+    if None in acc:
+        for i in range(data.num_of_requests):
+            start = data.num_of_VNF_types * i
+            end = start + data.num_of_VNF_types
+            if -1 in new_sol[start:end]:
+                acc[i] = False
+            elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
+                acc[i] = True
+            else:
+                acc[i] = False
+    else:
+        for i in impacted_requests:
+            start = data.num_of_VNF_types * i
+            end = start + data.num_of_VNF_types
+            if -1 in new_sol[start:end]:
+                acc[i] = False
+            elif check_if_meet_delay_requirement(new_sol[start:end], i, data):
+                acc[i] = True
+            else:
+                acc[i] = False
     return acc
 
 def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
@@ -155,7 +175,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
 
     current_sol = deepcopy(improved_greedy_sol)
     new_sol = []
-    current_temperature = 1000
+    current_temperature = 100
     final_temperature = 0.0001
     cooling_rate = 0.99
     cooling_rate_for_worse_sol = 0.99999
@@ -169,13 +189,13 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     res_arr = []
     best_arr = []
 
-    while it_count <= 8000:
+    while it_count <= 200000:
         # print("current_temperature:",  current_temperature)
-        new_sol, flag = find_new_solution(current_sol, data)
+        new_sol, impacted_requests, flag = find_new_solution(current_sol, data)
         if flag:
             it_count += 1
             fisible_count += 1
-            new_acception = check_acception(new_sol, data)
+            new_acception = check_acception(new_sol, impacted_requests, current_acception, data)
             profit = 0
             for i in range(data.num_of_requests):
                 if new_acception[i]:
