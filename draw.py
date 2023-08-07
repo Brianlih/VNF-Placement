@@ -69,7 +69,7 @@ def main(arr):
         # # line 3 points
         # x3 = number_of_requests
         # y3 = result_mean_random_time_cost
-        # plt.plot(x3, y3, 'D-', color='b', label="Random", markersize=8, linewidth=2.5)
+        # plt.plot(x3, y3, 'D-', color='paleturquoise', label="Random", markersize=8, linewidth=2.5)
 
         # # line 4 points
         # x4 = number_of_requests
@@ -79,7 +79,7 @@ def main(arr):
         # # line 5 points
         # x5 = number_of_requests
         # y5 = result_mean_hGreedy_time_cost
-        # plt.plot(x5, y5, 'x-', color='paleturquoise', label="HGreedy", markersize=8, linewidth=2.5)
+        # plt.plot(x5, y5, 'x-', color='mediumturquoise', label="HGreedy", markersize=8, linewidth=2.5)
 
         # # line 6 points
         # x6 = number_of_requests
@@ -89,10 +89,11 @@ def main(arr):
         # # line 7 points
         # x7 = number_of_requests
         # y7 = result_mean_sa_time_cost
-        # plt.plot(x7, y7, 'o-', color='darkorange', label="VISA", markersize=8, linewidth=2.5)
-        x = [i for i in range(len(arr))]
-        y = arr
-        plt.plot(x, y, color='darkorange', label="VISA", markersize=8, linewidth=2.5)
+        # plt.plot(x7, y7, 'o-', color='bisque', label="VISA", markersize=8, linewidth=2.5)
+        print("arr: ", arr[:1000])
+        x = [i for i in range(len(arr) - 4500)]
+        y = arr[4500:]
+        plt.plot(x, y, color='bisque', label="VISA", markersize=8, linewidth=2.5)
 
         # plt.xticks(number_of_requests, [str(number_of_requests[i]) for i in range(len(number_of_requests))])
         x_ticks_to_display = [x[i] for i in range(0, len(x), 50000)]
@@ -102,4 +103,4 @@ def main(arr):
         plt.legend()
         # plt.show()
         current_date = datetime.datetime.now()
-        plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + "-line.png")
+        plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + "-convergence-25.png")

@@ -12,15 +12,14 @@ if __name__ == "__main__":
 #     # seeds = []
 #     while itt <= seed_upper_bound:
     # number_of_requests = [12]
-    number_of_requests = [20]
+    number_of_requests = [25]
     number_of_VNF_types = [10]
     # number_of_VNF_types = [3,5,7,9,11]
     # number_of_nodes = [12,13,14,15,16]
     number_of_nodes = [60]
-    number_of_iteration = 15
+    number_of_iteration = 1
     # seed = datetime.datetime.now().timestamp()
     # seed = itt
-    # random.seed(itt)
     # print("seed: ", seed)
 
     result_mean_cplex_res_value = []
@@ -119,9 +118,10 @@ if __name__ == "__main__":
         mean_res_arr = []
 
         # average_request_values = []
-        for it in range(1, 16):
-            print("iteration: ", it)
-            random.seed(it)
+        seeds = [3002, 6013, 1014, 7015, 5020, 770, 772, 516, 6280, 1783, 5041]
+        for seed in seeds:
+            print("seed: ", seed)
+            random.seed(seed)
             # Initialize the input data
             pre_settings.init(run_time, number_of_nodes[0], number_of_VNF_types[0])
             # Initialize the input data
@@ -349,7 +349,7 @@ if __name__ == "__main__":
             # print("Improved Greedy started!")
             improved_greedy_res = improved_greedy.main(Data)
             # print("SA started!")
-            sa_res = my_sa_method_for_multi_change.main(Data, random_res["solution"], random_res["total_profit"])
+            sa_res = my_sa_method.main(Data, improved_greedy_res["solution"], improved_greedy_res["total_profit"])
 
             if mean_res_arr == []:
                 mean_res_arr = sa_res["res_arr"]
@@ -395,31 +395,31 @@ if __name__ == "__main__":
             # mean_sa_average_ratio_of_vnf_shared += sa_res["ratio_of_vnf_shared"]
 
         for i in range(len(mean_res_arr)):
-            mean_res_arr[i] /= number_of_iteration
+            mean_res_arr[i] /= len(seeds)
         draw.main(mean_res_arr)
 
-        # mean_cplex_res_value /= len(seeds)
+        # mean_cplex_res_value /= number_of_iteration
         # mean_ga_res_value /= number_of_iteration
-        mean_random_res_value /= number_of_iteration
+        mean_random_res_value /= len(seeds)
         # mean_greedy_res_value /= number_of_iteration
-        mean_hGreedy_res_value /= number_of_iteration
-        mean_improved_greedy_res_value /= number_of_iteration
-        mean_sa_res_value /= number_of_iteration
+        mean_hGreedy_res_value /= len(seeds)
+        mean_improved_greedy_res_value /= len(seeds)
+        mean_sa_res_value /= len(seeds)
 
-        # mean_cplex_time_cost /= len(seeds)
+        # mean_cplex_time_cost /= number_of_iteration
         # mean_ga_time_cost /= number_of_iteration
-        mean_random_time_cost /= number_of_iteration
+        mean_random_time_cost /= len(seeds)
         # mean_greedy_time_cost /= number_of_iteration
-        mean_hGreedy_time_cost /= number_of_iteration
-        mean_improved_greedy_time_cost /= number_of_iteration
-        mean_sa_time_cost /= number_of_iteration
+        mean_hGreedy_time_cost /= len(seeds)
+        mean_improved_greedy_time_cost /= len(seeds)
+        mean_sa_time_cost /= len(seeds)
 
-        # mean_cplex_acc_rate /= len(seeds)
-        mean_random_acc_rate /= number_of_iteration
+        # mean_cplex_acc_rate /= number_of_iteration
+        mean_random_acc_rate /= len(seeds)
         # mean_greedy_acc_rate /= number_of_iteration
-        mean_hGreedy_acc_rate /= number_of_iteration
-        mean_improved_greedy_acc_rate /= number_of_iteration
-        mean_sa_acc_rate /= number_of_iteration
+        mean_hGreedy_acc_rate /= len(seeds)
+        mean_improved_greedy_acc_rate /= len(seeds)
+        mean_sa_acc_rate /= len(seeds)
 
         # mean_random_average_delay /= number_of_iteration
         # mean_greedy_average_delay /= number_of_iteration
@@ -472,16 +472,19 @@ if __name__ == "__main__":
         # result_mean_sa_average_ratio_of_vnf_shared.append(mean_sa_average_ratio_of_vnf_shared)
 
 #         flag = True
-#         for i in range(len(result_mean_sa_res_value)):
-#             if (result_mean_sa_res_value[i] <= result_mean_hGreedy_res_value[i] or
-#                 result_mean_sa_res_value[i] <= result_mean_improved_greedy_res_value[i]):
+#         if 0 in result_mean_random_res_value:
+#             flag = False
+#         if flag:
+#             for i in range(len(result_mean_sa_res_value)):
+#                 if (result_mean_sa_res_value[i] <= result_mean_hGreedy_res_value[i] or
+#                     result_mean_sa_res_value[i] <= result_mean_random_res_value[i]):
 #                     flag = False
 #                     break
 #         if flag:
 #             for i in range(len(result_mean_sa_res_value) - 1):
 #                 if (result_mean_hGreedy_res_value[i] > result_mean_hGreedy_res_value[i + 1] or
 #                     result_mean_sa_res_value[i] > result_mean_sa_res_value[i + 1] or
-#                     result_mean_improved_greedy_res_value[i] > result_mean_improved_greedy_res_value[i + 1]):
+#                     result_mean_random_res_value[i] > result_mean_random_res_value[i + 1]):
 #                     flag = False
 #                     break
 #         if flag:
@@ -500,7 +503,7 @@ if __name__ == "__main__":
 
 # if __name__ == "__main__":
 #     seed_lower_bound = 1
-#     seed_upper_bound = 63
+#     seed_upper_bound = 250
 #     print("start")
 
 #     seeds = Queue()
@@ -514,8 +517,8 @@ if __name__ == "__main__":
 #         p = Process(target=worker, args=(seeds, seed_lower_bound, seed_upper_bound))
 #         p.start()
 #         processes.append(p)
-#         seed_lower_bound += 63
-#         seed_upper_bound += 63
+#         seed_lower_bound += 250
+#         seed_upper_bound += 250
     
 #     for t in processes:
 #         t.join()
@@ -531,128 +534,81 @@ if __name__ == "__main__":
 
 #     print("final_seeds: ", final_seeds)
                     
-    # print("result_mean_cplex_res_value: ", result_mean_cplex_res_value)
-    # print("result_mean_ga_res_value:", result_mean_ga_res_value)
-    print("result_mean_random_res_value:", result_mean_random_res_value)
-    # print("result_mean_greedy_res_value:", result_mean_greedy_res_value)
-    print("result_mean_hGreedy_res_value:", result_mean_hGreedy_res_value)
-    print("result_mean_improved_greedy_res_value:", result_mean_improved_greedy_res_value)
-    print("result_mean_sa_res_value:", result_mean_sa_res_value)
-    print("----------------------------------------------------------------------------------")
-    # print("result_mean_cplex_time_cost: ", result_mean_cplex_time_cost)
-    # print("result_mean_ga_time_cost: ", result_mean_ga_time_cost)
-    print("result_mean_random_time_cost: ", result_mean_random_time_cost)
-    # print("result_mean_greedy_time_cost: ", result_mean_greedy_time_cost)
-    print("result_mean_hGreedy_time_cost: ", result_mean_hGreedy_time_cost)
-    print("result_mean_improved_greedy_time_cost: ", result_mean_improved_greedy_time_cost)
-    print("result_mean_sa_time_cost: ", result_mean_sa_time_cost)
-    print("----------------------------------------------------------------------------------")
-    # print("result_mean_cplex_acc_rate: ", result_mean_cplex_acc_rate)
-    print("result_mean_random_acc_rate: ", result_mean_random_acc_rate)
-    # print("result_mean_greedy_acc_rate: ", result_mean_greedy_acc_rate)
-    print("result_mean_hGreedy_acc_rate: ", result_mean_hGreedy_acc_rate)
-    print("result_mean_improved_greedy_acc_rate: ", result_mean_improved_greedy_acc_rate)
-    print("result_mean_sa_acc_rate: ", result_mean_sa_acc_rate)
+    # # print("result_mean_cplex_res_value: ", result_mean_cplex_res_value)
+    # # print("result_mean_ga_res_value:", result_mean_ga_res_value)
+    # print("result_mean_random_res_value:", result_mean_random_res_value)
+    # # print("result_mean_greedy_res_value:", result_mean_greedy_res_value)
+    # print("result_mean_hGreedy_res_value:", result_mean_hGreedy_res_value)
+    # print("result_mean_improved_greedy_res_value:", result_mean_improved_greedy_res_value)
+    # print("result_mean_sa_res_value:", result_mean_sa_res_value)
     # print("----------------------------------------------------------------------------------")
-    # print("result_mean_random_average_delay: ", result_mean_random_average_delay)
-    # print("result_mean_greedy_average_delay: ", result_mean_greedy_average_delay)
-    # print("result_mean_hGreedy_average_delay: ", result_mean_hGreedy_average_delay)
-    # print("result_mean_improved_greedy_average_delay: ", result_mean_improved_greedy_average_delay)
-    # print("result_mean_sa_average_delay: ", result_mean_sa_average_delay)
+    # # print("result_mean_cplex_time_cost: ", result_mean_cplex_time_cost)
+    # # print("result_mean_ga_time_cost: ", result_mean_ga_time_cost)
+    # print("result_mean_random_time_cost: ", result_mean_random_time_cost)
+    # # print("result_mean_greedy_time_cost: ", result_mean_greedy_time_cost)
+    # print("result_mean_hGreedy_time_cost: ", result_mean_hGreedy_time_cost)
+    # print("result_mean_improved_greedy_time_cost: ", result_mean_improved_greedy_time_cost)
+    # print("result_mean_sa_time_cost: ", result_mean_sa_time_cost)
     # print("----------------------------------------------------------------------------------")
-    # print("result_mean_cplex_average_ratio_of_vnf_shared: ", result_mean_cplex_average_ratio_of_vnf_shared)
-    # print("result_mean_random_average_ratio_of_vnf_shared: ", result_mean_random_average_ratio_of_vnf_shared)
-    # print("result_mean_greedy_average_ratio_of_vnf_shared: ", result_mean_greedy_average_ratio_of_vnf_shared)
-    # print("result_mean_hGreedy_average_ratio_of_vnf_shared: ", result_mean_hGreedy_average_ratio_of_vnf_shared)
-    # print("result_mean_improved_greedy_average_ratio_of_vnf_shared: ", result_mean_improved_greedy_average_ratio_of_vnf_shared)
-    # print("result_mean_sa_average_ratio_of_vnf_shared: ", result_mean_sa_average_ratio_of_vnf_shared)
+    # # print("result_mean_cplex_acc_rate: ", result_mean_cplex_acc_rate)
+    # print("result_mean_random_acc_rate: ", result_mean_random_acc_rate)
+    # # print("result_mean_greedy_acc_rate: ", result_mean_greedy_acc_rate)
+    # print("result_mean_hGreedy_acc_rate: ", result_mean_hGreedy_acc_rate)
+    # print("result_mean_improved_greedy_acc_rate: ", result_mean_improved_greedy_acc_rate)
+    # print("result_mean_sa_acc_rate: ", result_mean_sa_acc_rate)
+    # # print("----------------------------------------------------------------------------------")
+    # # print("result_mean_random_average_delay: ", result_mean_random_average_delay)
+    # # print("result_mean_greedy_average_delay: ", result_mean_greedy_average_delay)
+    # # print("result_mean_hGreedy_average_delay: ", result_mean_hGreedy_average_delay)
+    # # print("result_mean_improved_greedy_average_delay: ", result_mean_improved_greedy_average_delay)
+    # # print("result_mean_sa_average_delay: ", result_mean_sa_average_delay)
+    # # print("----------------------------------------------------------------------------------")
+    # # print("result_mean_cplex_average_ratio_of_vnf_shared: ", result_mean_cplex_average_ratio_of_vnf_shared)
+    # # print("result_mean_random_average_ratio_of_vnf_shared: ", result_mean_random_average_ratio_of_vnf_shared)
+    # # print("result_mean_greedy_average_ratio_of_vnf_shared: ", result_mean_greedy_average_ratio_of_vnf_shared)
+    # # print("result_mean_hGreedy_average_ratio_of_vnf_shared: ", result_mean_hGreedy_average_ratio_of_vnf_shared)
+    # # print("result_mean_improved_greedy_average_ratio_of_vnf_shared: ", result_mean_improved_greedy_average_ratio_of_vnf_shared)
+    # # print("result_mean_sa_average_ratio_of_vnf_shared: ", result_mean_sa_average_ratio_of_vnf_shared)
 
-# #     if False:
-# #         results = [result_mean_cplex_time_cost, result_mean_improved_greedy_time_cost, result_mean_greedy_time_cost, result_mean_hGreedy_time_cost]
-# #         ylim = 0
-# #         for i in range(len(results)):
-# #             for j in range(len(results[i])):
-# #                 if results[i][j] > ylim:
-# #                     ylim = results[i][j]
+    # # # line 1 points
+    # # x1 = number_of_requests
+    # # y1 = result_mean_cplex_res_value
+    # # plt.plot(x1, y1, '^-', color='#333C83', label="CPLEX", markersize=8, linewidth=2.5)
 
-# #         # results = [result_mean_cplex_res_value, result_mean_ga_res_value, result_mean_greedy_res_value, result_mean_hGreedy_res_value, result_mean_random_res_value]
-# #         colors = ['lightcoral', 'peru', 'powderblue', 'yellowgreen']
-# #         labels = ['CPLEX', 'VPIG', 'HGreedy', 'Greedy']
+    # # # line 2 points
+    # # x2 = number_of_requests
+    # # y2 = result_mean_ga_res_value
+    # # plt.plot(x2, y2, 'o-', color='g', label="GA", markersize=8, linewidth=2.5)
 
-# #         results = {
-# #             'result_mean_cplex_res_value': tuple(result_mean_cplex_res_value),
-# #             # 'result_mean_ga_res_value': tuple(result_mean_ga_res_value),
-# #             # 'result_mean_sa_res_value': tuple(result_mean_sa_res_value),
-# #             'result_mean_improved_greedy_res_value': tuple(result_mean_improved_greedy_res_value),
-# #             'result_mean_hGreedy_res_value': tuple(result_mean_hGreedy_res_value),
-# #             'result_mean_greedy_res_value': tuple(result_mean_greedy_res_value),
-# #         }
-        
-# #         x = np.arange(len(number_of_requests))  # the label locations
-# #         width = 0.2  # the width of the bars
-# #         multiplier = -0.5
-# #         l = 0
+    # # line 3 points
+    # x3 = number_of_requests
+    # y3 = result_mean_random_res_value
+    # plt.plot(x3, y3, 'D-', color='#EAEA7F', label="Random", markersize=8, linewidth=2.5)
 
-# #         fig, ax = plt.subplots(layout='constrained')
+    # # # line 4 points
+    # # x4 = number_of_VNF_types
+    # # y4 = result_mean_greedy_res_value
+    # # plt.plot(x4, y4, '*-', color='yellowgreen', label="Greedy", markersize=8, linewidth=2.5)
 
-# #         patterns = ["**", "---", "\\\\\\", "|||"]
+    # # line 5 points
+    # x5 = number_of_requests
+    # y5 = result_mean_hGreedy_res_value
+    # plt.plot(x5, y5, 'x-', color='#FDAF75', label="HGreedy", markersize=8, linewidth=2.5)
 
-# #         for method, result in results.items():
-# #             offset = width * multiplier
-# #             ax.bar(x + offset, result, width, color=colors[l], label=labels[l], align='center')
-# #             multiplier += 1
-# #             l += 1
+    # # # line 6 points
+    # # x6 = number_of_requests
+    # # y6 = result_mean_improved_greedy_res_value
+    # # plt.plot(x6, y6, 'D-', color='mediumturquoise', label="Improved-greedy", markersize=8, linewidth=2.5)
 
-# #         # Add some text for labels, title and custom x-axis tick labels, etc.
-# #         ax.set_xlabel('Number of requests')
-# #         ax.set_ylabel('Profit')
-# #         # ax.set_title('number_of_iteration=' + str(number_of_iteration))
-# #         ax.set_xticks(x + width, number_of_requests)
-# #         ax.legend(loc='upper left')
-# #         ax.set_ylim(0, ylim + 10)
-# #         # plt.show()
-# #         current_date = datetime.datetime.now()
-# #         plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + "-bar.png")
-# #     else:
-# #         # # line 1 points
-# #         # x1 = number_of_requests
-# #         # y1 = result_mean_cplex_res_value
-# #         # plt.plot(x1, y1, 's-', color='mediumseagreen', label="CPLEX", markersize=8, linewidth=2.5)
+    # # line 7 points
+    # x7 = number_of_requests
+    # y7 = result_mean_sa_res_value
+    # plt.plot(x7, y7, 'o-', color='#F24A72', label="VISA", markersize=8, linewidth=2.5)
 
-# #         # # line 2 points
-# #         # x2 = number_of_requests
-# #         # y2 = result_mean_ga_res_value
-# #         # plt.plot(x2, y2, 'o-', color='g', label="GA", markersize=8, linewidth=2.5)
-
-# #         # # line 3 points
-# #         # x3 = number_of_requests
-# #         # y3 = result_mean_random_time_cost
-# #         # plt.plot(x3, y3, 'D-', color='b', label="Random", markersize=8, linewidth=2.5)
-
-# #         # # line 4 points
-# #         # x4 = number_of_VNF_types
-# #         # y4 = result_mean_greedy_res_value
-# #         # plt.plot(x4, y4, '*-', color='yellowgreen', label="Greedy", markersize=8, linewidth=2.5)
-
-# #         # line 5 points
-# #         x5 = number_of_requests
-# #         y5 = result_mean_hGreedy_res_value
-# #         plt.plot(x5, y5, 'x-', color='paleturquoise', label="HGreedy", markersize=8, linewidth=2.5)
-
-# #         # line 6 points
-# #         x6 = number_of_requests
-# #         y6 = result_mean_improved_greedy_res_value
-# #         plt.plot(x6, y6, 'D-', color='mediumturquoise', label="Improved-greedy", markersize=8, linewidth=2.5)
-
-# #         # line 7 points
-# #         x7 = number_of_requests
-# #         y7 = result_mean_sa_res_value
-# #         plt.plot(x7, y7, 'o-', color='darkorange', label="VISA", markersize=8, linewidth=2.5)
-
-# #         plt.xticks(number_of_requests, [str(number_of_requests[i]) for i in range(len(number_of_requests))])
-# #         plt.xlabel('Number of requests')
-# #         plt.ylabel('Profit')
-# #         plt.legend()
-# #         # plt.show()
-# #         current_date = datetime.datetime.now()
-# #         plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + "-line.png")
+    # plt.xticks(number_of_requests, [str(number_of_requests[i]) for i in range(len(number_of_requests))])
+    # plt.xlabel('Number of requests')
+    # plt.ylabel('Profit')
+    # plt.legend()
+    # # plt.show()
+    # current_date = datetime.datetime.now()
+    # plt.savefig("../result/" + str(current_date.month) + str(current_date.day) + "-line.png")

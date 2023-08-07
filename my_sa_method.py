@@ -145,7 +145,7 @@ def check_acception(new_sol, ir, acception, data):
             acc[ir] = False
     return acc
 
-def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
+def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     it_count = 0
     fisible_count = 0
     infisible_count = 0
@@ -168,7 +168,7 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     res_arr = []
     best_arr = []
 
-    while it_count <= 7000:
+    while it_count <= 250000:
         # print("current_temperature:",  current_temperature)
         new_sol, ir, flag = find_new_solution(current_sol, data)
         if flag:
