@@ -25,9 +25,7 @@ def check_is_last_vnf(f, arr):
     return 0
 
 def init(number_of_requests, number_of_VNF_types):
-    global M, F, nodes, eta_f, cpu_f, max_repeat_time
-    global number_of_individual, number_of_gene_in_an_individual, elitism_rate, iteration_for_ga
-    global number_of_individual_chose_from_population_for_tournament, crossover_rate, mutation_rate
+    global M, F, nodes, eta_f, cpu_f
 
     M = 1000000
 
@@ -35,15 +33,6 @@ def init(number_of_requests, number_of_VNF_types):
     upper_bound_of_eta_f = 2
     lower_bound_of_cpu_f = 1
     upper_bound_of_cpu_f = 7
-
-    number_of_individual = 50 # population size
-    elitism_rate = 0.1
-    iteration_for_ga = 100
-    max_repeat_time = 10
-    number_of_gene_in_an_individual = number_of_VNF_types * number_of_requests
-    number_of_individual_chose_from_population_for_tournament = 5
-    crossover_rate = 0.5
-    mutation_rate = 0.02
 
     F = [i for i in range(number_of_VNF_types)]
     # print("F = ", F)

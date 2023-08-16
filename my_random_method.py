@@ -119,13 +119,8 @@ def main(data_from_cplex):
                 buffer_request_assign_node = request_assign_node
         rrs_index += 1
 
-    # print("Random solution: ", request_assign_node)
     end_time = time.time()
     time_cost = end_time - start_time
-
-    random_solution = []
-    for i in range(data.num_of_requests):
-        random_solution.extend(request_assign_node[i])
 
     total_profit = 0
     acc_count = 0
@@ -133,17 +128,10 @@ def main(data_from_cplex):
         if buffer_z[i] == 1:
             total_profit += data.profit_i[i]
             acc_count += 1
-    average_delay = 0
-    if acc_count > 0:
-        average_delay = total_delay / acc_count
-    else:
-        average_delay = 0
     acc_rate = acc_count / data.num_of_requests
     res = {
         "total_profit": total_profit,
         "time_cost": time_cost,
         "acc_rate": acc_rate,
-        "average_delay": average_delay,
-        "solution": random_solution
     }
     return res

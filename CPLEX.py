@@ -227,15 +227,6 @@ if __name__ == "__main__":
         tau_i[i] <= M * (1-z[i]) + r_i[i] for i in sequence
     )
 
-    # # Number of same type VNF in a request constraint
-    # for i in range(number_of_requests):
-    #     for f in F:
-    #         count = 0
-    #         for l in range(len(F_i[i])):
-    #             if F_i[i][l] == f:
-    #                 count += 1
-    #         VNF_placement_model.add_constraint(count <= 1, ctname="numbre_of_same_type_VNF_in_a_request")
-
     # Relation between z and x constraint
     VNF_placement_model.add_constraints((
         sum(x[i, f, v] for v in range(number_of_nodes)) == z[i]

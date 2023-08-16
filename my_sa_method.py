@@ -35,19 +35,8 @@ def find_new_solution(current_sol, data):
         if len(ava_nodes) > 0:
             buffer = random.sample(ava_nodes, k=1)
             new_sol[loc] = buffer[0]
-            # overload_node = check_capacity(new_sol, new_sol[loc], data)
         else:
             flag = False
-            # print("Infisible")
-        # else:
-        #     buffer = random.sample(data.nodes, k=1)
-        #     new_sol[loc] = buffer[0]
-        #     have_been_considered.append(buffer[0])
-        # loop_count += 1
-        # if loop_count >= 50:
-        #     # print("Infisible")
-        #     flag = False
-        #     break
     return new_sol, r_index, flag
 
 def find_available_nodes(new_sol, v_type, data):
@@ -145,7 +134,7 @@ def check_acception(new_sol, ir, acception, data):
             acc[ir] = False
     return acc
 
-def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
+def main(data_from_cplex, improved_greedy_sol, improved_greedy_res):
     it_count = 0
     fisible_count = 0
     infisible_count = 0
@@ -157,19 +146,14 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     current_temperature = 1000
     final_temperature = 0.0001
     cooling_rate = 0.99
-    cooling_rate_for_worse_sol = 0.99999
     diff = 0
     prob = 0
     current_res = improved_greedy_res
     current_acception = [None for i in range(data.num_of_requests)]
     new_acception = [None for i in range(data.num_of_requests)]
     best_res = improved_greedy_res
-    same_res_count = 0
-    res_arr = []
-    best_arr = []
 
     while it_count <= 7000:
-        # print("current_temperature:",  current_temperature)
         new_sol, ir, flag = find_new_solution(current_sol, data)
         if flag:
             it_count += 1
@@ -182,10 +166,6 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
             if profit >= current_res:
                 if profit > best_res:
                     best_res = profit
-                if profit > current_res:
-                    same_res_count = 0
-                else:
-                    same_res_count += 1
                 current_res = profit
                 current_sol = new_sol
                 current_acception = new_acception
@@ -197,48 +177,11 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
                     current_res = profit
                     current_sol = new_sol
                     current_acception = new_acception
-                same_res_count += 1
                 current_temperature *= cooling_rate
-            res_arr.append(current_res)
-            best_arr.append(best_res)
 
     end_time = time.time()
     time_cost = end_time - start_time
 
-    # total_profit = 0
-    # if current_res > improved_greedy_res:
-    #     total_profit = current_res
-    # else:
-    #     total_profit = improved_greedy_res
-    #     current_sol = improved_greedy_sol
-
-    vnf_on_node = [[] for i in range(data.num_of_nodes)]
-    for i in data.nodes:
-        for j in range(len(current_sol)):
-            if current_sol[j] == i:
-                vnf_type = j % data.num_of_VNF_types
-                vnf_on_node[i].append(vnf_type)
-    shared_count = 0
-    vnf_count = 0
-    for i in data.nodes:
-        for j in vnf_on_node[i]:
-            vnf_count += 1
-            count = 0
-            for k in range(data.num_of_requests):
-                if j in data.F_i[k]:
-                    loc = data.num_of_VNF_types * k + j
-                    if current_sol[loc] == i:
-                        count += 1
-                        if count > 1:
-                            shared_count += 1
-                            break
-    if vnf_count > 0:
-        ratio_of_vnf_shared = shared_count / vnf_count
-    else:
-        ratio_of_vnf_shared = 0
-
-    # current_res -= vnf_count * pre_settings.cost_f
-    # acception = check_acception(current_sol, data)
     acc_count = 0
     for i in range(len(current_acception)):
         if current_acception[i]:
@@ -248,12 +191,6 @@ def main(data_from_cplex, improved_greedy_sol, improved_greedy_res, s):
     res = {
         "total_profit": current_res,
         "time_cost": time_cost,
-        # "solution": current_sol,
         "acc_rate": acc_rate,
-        # "average_delay": average_delay,
-        "ratio_of_vnf_shared": ratio_of_vnf_shared,
-        "res_arr": res_arr,
-        "best_arr": best_arr,
-        "fisible_count": fisible_count
     }
     return res

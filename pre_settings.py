@@ -39,15 +39,8 @@ def init(run_time, number_of_nodes, number_of_VNF_types):
         lower_bound_of_pi_wv = 1
         upper_bound_of_pi_wv = 10
 
-        number_of_topo = 99
-        # G = construct_test_topo("topo/test/" + str(number_of_nodes) + ".txt")
-        G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
-        # G = construct_topo("topo/new_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
-        # G = construct_topo("topo/topos/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
-        # G = construct_topo("topo/small_topo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+ ".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
-        # nx.draw_networkx(G)
-        # plt.show()
-        # print("number_of_nodes = ", number_of_nodes)
+        number_of_topo = 100
+        G = construct_topo("topo/ftopo/" + str(number_of_nodes) + "-"+ str(number_of_topo)+".txt", lower_bound_of_pi_wv, upper_bound_of_pi_wv)
         # print("edges = ", G.edges())
 
         nodes = []
@@ -64,5 +57,3 @@ def init(run_time, number_of_nodes, number_of_VNF_types):
         for i in range(number_of_nodes):
             mem_v.append(random.randint(lower_bound_of_mem_v, upper_bound_of_mem_v))
         # print("mem_v = ", mem_v)
-
-        cost_f = 0.01
